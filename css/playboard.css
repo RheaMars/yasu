@@ -1,0 +1,36 @@
+table.playboard, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.block {
+    border-collapse: collapse;
+    border: none;
+}
+
+.block td {
+    border: 1px solid black;
+    height: 31.5px;
+}
+
+.block tr:first-child td {
+    border-top: none;
+}
+
+.block tr:last-child td {
+    border-bottom: none;
+}
+
+.block tr td:first-child {
+    border-left: none;
+}
+
+.block tr td:last-child {
+    border-right: none;
+}
+
+.block .field {
+    width: 25px;
+    text-align: center;
+    border: 0 none;
+}
