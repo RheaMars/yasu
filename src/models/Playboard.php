@@ -33,14 +33,7 @@ class Playboard
         $this->cols = $this->createColumns($fields);
         $this->blocks = $this->createBlocks($fields);
 
-//        echo "<pre>";
-//        var_dump($this->cols);
-
-//        echo "<pre>";
-//        var_dump($this->blocks);
-
         $this->prefillFields();
-//        $this->prefillFieldsRandomly();
 
         $this->isValid();
     }
@@ -58,8 +51,8 @@ class Playboard
     private function createFields($baseSize): array
     {
         $fields = [];
-        for($row = 1; $row <= pow($baseSize, 2); $row++) {
-            for($col = 1; $col <= pow($baseSize, 2); $col++) {
+        for ($row = 1; $row <= pow($baseSize, 2); $row++) {
+            for ($col = 1; $col <= pow($baseSize, 2); $col++) {
                 $fields[$row."-".$col] = new Field($baseSize, $row, $col, new Digit(null, $this->baseSize));
             }
         }
@@ -107,7 +100,7 @@ class Playboard
             $blockIndex = $playboardRowIndex."-".$playboardColIndex;
 
             if (!isset($blocks[$blockIndex])) {
-                $block = new Block($blockIndex);
+                $block = new Block($blockIndex, $playboardRowIndex, $playboardColIndex);
                 $blocks[$blockIndex] = $block;
             }
             $block = $blocks[$blockIndex];
@@ -116,60 +109,22 @@ class Playboard
         return $blocks;
     }
 
-    private function prefillFieldsRandomly(): void
-    {
-        foreach($this->fields as $field) {
-            $field->setDigit(Digit::getRandomDigit($this->baseSize));
-        }
-    }
-
-    private function prefillFields(): void
-    {
-        // TODO
-
-        foreach($this->fields as $field) {
-            $digits = range(1, pow($this->baseSize, 2));
-            shuffle($digits);
-            $rowIndex = $field->getRowIndex();
-            $colIndex = $field->getColIndex();
-            $blockIndex = $field->getBlockIndex();
-            foreach ($digits as $digit){
-                $field->setDigit(new Digit($digit, $this->baseSize));
-                $row = $this->rows[$rowIndex];
-                $col = $this->cols[$colIndex];
-                $block = $this->blocks[$blockIndex];
-                if ($this->isValidDigitGroup($row) && $this->isValidDigitGroup($col) && $this->isValidDigitGroup($block)){
-                    //echo $this->generatePlayboardHtml();
-                    //echo "<br/><br/>";
-                    break;
-                }
-                $field->setDigit(new Digit(null, $this->baseSize));
-            }
-//            echo "<pre>";
-//            var_dump($digits);
-//            exit;
-//            while(!$this->isValidDigitGroup($row) || !$this->isValidDigitGroup($col) || !$this->isValidDigitGroup($block)){
-//                ...;
-//            }
-        }
-    }
-
     public function generatePlayboardHtml(): string
     {
         $fields = $this->getFields();
         $baseSize = $this->getBaseSize();
 
-        $html = '<table class="playboard"><tbody>';
+        $html = "<table class='playboard'><tbody>";
 
-        for($playboardRow = 1; $playboardRow <= $baseSize; $playboardRow++) {
+        for ($playboardRow = 1; $playboardRow <= $baseSize; $playboardRow++) {
             $html .= "<tr>";
-            for($playboardCol = 1; $playboardCol <= $baseSize; $playboardCol++) {
+            for ($playboardCol = 1; $playboardCol <= $baseSize; $playboardCol++) {
                 $html .= "<td>";
                 $html .= "<table class='block'>";
                 $html .= "<tbody>";
-                for($blockRow = 1; $blockRow <= $baseSize; $blockRow++) {
+                for ($blockRow = 1; $blockRow <= $baseSize; $blockRow++) {
                     $html .= "<tr>";
-                    for($blockCol = 1; $blockCol <= $baseSize; $blockCol++) {
+                    for ($blockCol = 1; $blockCol <= $baseSize; $blockCol++) {
                         $row = ($playboardRow - 1) * $baseSize + $blockRow;
                         $col = ($playboardCol - 1) * $baseSize + $blockCol;
                         $field = $fields[$row."-".$col];
@@ -196,7 +151,7 @@ class Playboard
     {
         $digitGroups = array_merge($this->blocks, $this->rows, $this->cols);
 
-        foreach($digitGroups as $group) {
+        foreach ($digitGroups as $group) {
             if (!$this->isValidDigitGroup($group)){
                 return false;
             }
@@ -205,11 +160,21 @@ class Playboard
         return true;
     }
 
+    private function isComplete(): bool
+    {
+        foreach ($this->fields as $field){
+            if (null === $field->getDigit()->getValue()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private function isValidDigitGroup(DigitGroup $group): bool
     {
         $fieldValues = [];
 
-        foreach($group->getFields() as $field) {
+        foreach ($group->getFields() as $field) {
             $value = $field->getDigit()->getValue();
             if ($value !== null){
                 $fieldValues[] = $value;
@@ -217,9 +182,161 @@ class Playboard
         }
 
         if (sizeof($fieldValues) != sizeof(array_unique($fieldValues))) {
-//            echo "Invalid digit group: " . $group->getType() . $group->getIndex();
             return false;
         }
         return true;
+    }
+
+    private function getBlockIndicesSortedDiagonally(): array
+    {
+        $indices = [];
+        foreach ($this->blocks as $block) {
+            $indices[] = [
+                "row" => $block->getPlayboardRowIndex(),
+                "col" => $block->getPlayboardColIndex(),
+                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColIndex()
+            ];
+        }
+
+        $indicesSum = array_column($indices, 'sum');
+        array_multisort($indicesSum, SORT_ASC, $indices);
+
+        return $indices;
+    }
+
+    private function emptyFields(): void
+    {
+        foreach ($this->fields as $field){
+            $field->setDigit(new Digit(null, $this->baseSize));
+        }
+    }
+
+    private function prefillFields(): void
+    {
+        //$this->prefillFieldsRandomly();
+        //$this->prefillFieldsByBlocksDiagonally(500);
+        //$this->prefillFieldsByRows(10000);
+        $this->prefillFieldsByPlayboardRows(500);
+    }
+
+    private function prefillFieldsRandomly(): void
+    {
+        foreach ($this->fields as $field) {
+            $field->setDigit(Digit::getRandomDigit($this->baseSize));
+        }
+    }
+
+    private function prefillFieldsByBlocksDiagonally(int $maxRounds): void
+    {
+        $digits = range(1, pow($this->baseSize, 2));
+
+        $sortedBlockIndices = $this->getBlockIndicesSortedDiagonally();
+
+        $counter = 0;
+        while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())){
+            $counter++;
+            $this->emptyFields();
+            shuffle($digits);
+
+            foreach ($digits as $digit) {
+                foreach ($sortedBlockIndices as $blockIndex) {
+
+                    $block = $this->blocks[$blockIndex["row"]."-".$blockIndex["col"]];
+
+                    $fieldsOfBlock = $block->getFields();
+                    shuffle($fieldsOfBlock);
+
+                    foreach ($fieldsOfBlock as $field) {
+
+                        if (null !== $field->getDigit()->getValue()) {
+                            continue;
+                        }
+
+                        $field->setDigit(new Digit($digit, $this->baseSize));
+
+                        $row = $this->rows[$field->getRowIndex()];
+                        $col = $this->cols[$field->getColIndex()];
+                        $block = $this->blocks[$field->getBlockIndex()];
+
+                        if ($this->isValidDigitGroup($row)
+                            && $this->isValidDigitGroup($col)
+                            && $this->isValidDigitGroup($block)){
+                            break;
+                        }
+                        $field->setDigit(new Digit(null, $this->baseSize));
+                    }
+                }
+            }
+        }
+    }
+
+    private function prefillFieldsByPlayboardRows(int $maxRounds): void
+    {
+        $digits = range(1, pow($this->baseSize, 2));
+
+        $counter = 0;
+        while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())) {
+            $counter++;
+            $this->emptyFields();
+            shuffle($digits);
+
+            foreach ($digits as $digit) {
+                foreach ($this->blocks as $block) {
+
+                    $fieldsOfBlock = $block->getFields();
+                    shuffle($fieldsOfBlock);
+
+                    foreach ($fieldsOfBlock as $field) {
+
+                        if (null !== $field->getDigit()->getValue()) {
+                            continue;
+                        }
+
+                        $field->setDigit(new Digit($digit, $this->baseSize));
+
+                        $row = $this->rows[$field->getRowIndex()];
+                        $col = $this->cols[$field->getColIndex()];
+                        $block = $this->blocks[$field->getBlockIndex()];
+
+                        if ($this->isValidDigitGroup($row)
+                            && $this->isValidDigitGroup($col)
+                            && $this->isValidDigitGroup($block)){
+                            break;
+                        }
+
+                        $field->setDigit(new Digit(null, $this->baseSize));
+                    }
+                }
+            }
+        }
+    }
+
+    private function prefillFieldsByRows(int $maxRounds): void
+    {
+
+        $digits = range(1, pow($this->baseSize, 2));
+
+        $counter = 0;
+        while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())){
+            $counter++;
+            $this->emptyFields();
+            shuffle($digits);
+
+            foreach ($this->fields as $field) {
+                $rowIndex = $field->getRowIndex();
+                $colIndex = $field->getColIndex();
+                $blockIndex = $field->getBlockIndex();
+                foreach ($digits as $digit) {
+                    $field->setDigit(new Digit($digit, $this->baseSize));
+                    $row = $this->rows[$rowIndex];
+                    $col = $this->cols[$colIndex];
+                    $block = $this->blocks[$blockIndex];
+                    if ($this->isValidDigitGroup($row) && $this->isValidDigitGroup($col) && $this->isValidDigitGroup($block)) {
+                        break;
+                    }
+                    $field->setDigit(new Digit(null, $this->baseSize));
+                }
+            }
+        }
     }
 }
