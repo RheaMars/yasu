@@ -129,7 +129,7 @@ class Playboard
 
         foreach($this->fields as $field) {
             $digits = range(1, pow($this->baseSize, 2));
-//            shuffle($digits);
+            shuffle($digits);
             $rowIndex = $field->getRowIndex();
             $colIndex = $field->getColIndex();
             $blockIndex = $field->getBlockIndex();
@@ -154,7 +154,7 @@ class Playboard
         }
     }
 
-    private function generatePlayboardHtml(): string
+    public function generatePlayboardHtml(): string
     {
         $fields = $this->getFields();
         $baseSize = $this->getBaseSize();
