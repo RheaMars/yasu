@@ -38,3 +38,7 @@ table.playboard, td {
     text-align: center;
     border: 0 none;
 }
+
+.isFixed {
+    font-weight: bold;
+}
