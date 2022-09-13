@@ -87,4 +87,14 @@ class Field
     {
         $this->digit = $digit;
     }
+
+    public function setToFixed(): void
+    {
+        $this->isValueFixed = true;
+    }
+
+    public function isValueFixed(): bool
+    {
+        return $this->isValueFixed;
+    }
 }

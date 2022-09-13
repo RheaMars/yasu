@@ -35,6 +35,7 @@ class Playboard
 
         $this->prefillFields();
         $this->emptyFieldsByPercentage(0.7);
+        $this->setPrefilledFieldsToFixed();
 
     }
 
@@ -131,7 +132,12 @@ class Playboard
                         $value = $field->getDigit()->getValue();
 
                         $html .= "<td>";
-                        $html .= "<input class='field row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
+                        if ($field->isValueFixed()){
+                            $html .= "<div class='field isFixed row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."'>".$value."</div>";
+                        }
+                        else {
+                            $html .= "<input class='field row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
+                        }
                         $html .= "</td>";
                     }
                     $html .= "</tr>";
@@ -225,6 +231,15 @@ class Playboard
                     $field = $this->getFields()[$key];
                     $field->setDigit(new Digit(null, $this->baseSize));
                 }
+        }
+    }
+
+    private function setPrefilledFieldsToFixed(): void
+    {
+        foreach ($this->fields as $field){
+            if (null !== $field->getDigit()->getValue()) {
+                $field->setToFixed();
+            }
         }
     }
 
