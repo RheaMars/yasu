@@ -34,8 +34,8 @@ class Playboard
         $this->blocks = $this->createBlocks($fields);
 
         $this->prefillFields();
+        $this->emptyFieldsByPercentage(0.7);
 
-        $this->isValid();
     }
 
     public function getFields(): array
@@ -204,10 +204,24 @@ class Playboard
         return $indices;
     }
 
-    private function emptyFields(): void
+    private function emptyFieldsByPercentage(float $percentage): void
     {
-        foreach ($this->fields as $field){
-            $field->setDigit(new Digit(null, $this->baseSize));
+        switch ($percentage) {
+            case 0.0:
+                return;
+                break;
+            case 1.0:
+                foreach ($this->fields as $field){
+                    $field->setDigit(new Digit(null, $this->baseSize));
+                }
+                break;
+            default:
+                $numberOfFieldsToEmpty = (int) (round($percentage * pow($this->baseSize, 4)));
+                $randomFieldKeys = array_rand($this->getFields(), $numberOfFieldsToEmpty);
+                foreach ($randomFieldKeys as $key) {
+                    $field = $this->getFields()[$key];
+                    $field->setDigit(new Digit(null, $this->baseSize));
+                }
         }
     }
 
@@ -235,7 +249,7 @@ class Playboard
         $counter = 0;
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())){
             $counter++;
-            $this->emptyFields();
+            $this->emptyFieldsByPercentage(1.0);
             shuffle($digits);
 
             foreach ($digits as $digit) {
@@ -277,7 +291,7 @@ class Playboard
         $counter = 0;
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())) {
             $counter++;
-            $this->emptyFields();
+            $this->emptyFieldsByPercentage(1.0);
             shuffle($digits);
 
             foreach ($digits as $digit) {
@@ -319,7 +333,7 @@ class Playboard
         $counter = 0;
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())){
             $counter++;
-            $this->emptyFields();
+            $this->emptyFieldsByPercentage(1.0);
             shuffle($digits);
 
             foreach ($this->fields as $field) {
