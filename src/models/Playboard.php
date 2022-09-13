@@ -206,10 +206,13 @@ class Playboard
 
     private function emptyFieldsByPercentage(float $percentage): void
     {
+        if ($percentage < 0.0 || $percentage > 1.0) {
+            throw new Exception("Percentage must be between 0 and 1");
+        }
+
         switch ($percentage) {
             case 0.0:
                 return;
-                break;
             case 1.0:
                 foreach ($this->fields as $field){
                     $field->setDigit(new Digit(null, $this->baseSize));
@@ -227,10 +230,11 @@ class Playboard
 
     private function prefillFields(): void
     {
+        $maxRounds = 100 * pow($this->baseSize, 2);
         //$this->prefillFieldsRandomly();
-        //$this->prefillFieldsByBlocksDiagonally(500);
-        //$this->prefillFieldsByRows(10000);
-        $this->prefillFieldsByPlayboardRows(500);
+        $this->prefillFieldsByBlocksDiagonally($maxRounds);
+        //$this->prefillFieldsByRows($maxRounds);
+        //$this->prefillFieldsByPlayboardRows($maxRounds);
     }
 
     private function prefillFieldsRandomly(): void
@@ -279,6 +283,11 @@ class Playboard
                         }
                         $field->setDigit(new Digit(null, $this->baseSize));
                     }
+
+                    // if field could not be filled, the playboard is invalid - try again
+                    if (null === $field->getDigit()->getValue()) {
+                        break 2;
+                    }
                 }
             }
         }
@@ -320,11 +329,19 @@ class Playboard
 
                         $field->setDigit(new Digit(null, $this->baseSize));
                     }
+
+                    // if field could not be filled, the playboard is invalid - try again
+                    if (null === $field->getDigit()->getValue()) {
+                        break 2;
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Note: This approach doesn't give good results! We leave it here for test purposes.
+     */
     private function prefillFieldsByRows(int $maxRounds): void
     {
 
@@ -349,6 +366,11 @@ class Playboard
                         break;
                     }
                     $field->setDigit(new Digit(null, $this->baseSize));
+                }
+
+                // if field could not be filled, the playboard is invalid - try again
+                if (null === $field->getDigit()->getValue()) {
+                    break;
                 }
             }
         }
