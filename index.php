@@ -12,14 +12,22 @@ use src\models\Playboard;
     <meta charset="UTF-8">
     <title>Sudoku</title>
     <link href="css/playboard.css" rel="stylesheet">
+    <script src="js/ext/jquery-3.6.1.js"></script>
+    <script src="js/app.js"></script>
 </head>
 <body>
     <h1>Sudoku</h1>
 
-    <?php
-    $playboard = new Playboard(3);
-    echo $playboard->generatePlayboardHtml();
-    ?>
+    <div id="playboardWrapper">
+        <?php
+        $playboard = new Playboard(3);
+        echo $playboard->generatePlayboardHtml();
+        ?>
+    </div>
+
+    <div>
+        <button id="createNewGame">New game</button>
+    </div>
 
 </body>
 </html>
