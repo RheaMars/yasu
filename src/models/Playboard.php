@@ -21,25 +21,62 @@ class Playboard
 
     private bool $isCorrectlyInitialized = false;
 
-    public function __construct(int $baseSize, float $level)
+    public function initialize(int $baseSize, float $level)
     {
         if ($baseSize < 1) {
             throw new Exception("Base size must be at least 1.");
         }
         $this->baseSize = $baseSize;
 
-        // create fields, rows, columns, and blocks
-        $fields = $this->createFields($baseSize);
-        $this->fields = $fields;
-        $this->rows = $this->createRows($fields);
-        $this->cols = $this->createColumns($fields);
-        $this->blocks = $this->createBlocks($fields);
+        $this->createFrame();
 
         $this->prefillFields();
         if ($this->isValid() && $this->isComplete()) {
             $this->isCorrectlyInitialized = true;
             $this->prepareForGame($level);
         }
+    }
+
+    public function initializeFromData(array $data)
+    {
+
+        $this->baseSize = pow(sizeof($data), 1/4);
+
+        $this->createFrame();
+
+        foreach ($data as $fieldData) {
+            $field = $this->getFieldByIndices($fieldData["row"], $fieldData["col"]);
+            if ("" === $fieldData["val"]){
+                $field->setDigit(new Digit(null, $this->baseSize));
+            }
+            else {
+                $field->setDigit(new Digit((int)$fieldData["val"], $this->baseSize));
+            }
+
+            if ("true" === $fieldData["isFixed"]){
+                $field->setToFixed();
+            }
+        }
+    }
+
+    private function getFieldByIndices(int $rowIndex, int $colIndex): Field
+    {
+        foreach ($this->fields as $field){
+            if ($rowIndex === $field->getRowIndex() && $colIndex === $field->getColIndex()) {
+                return $field;
+            }
+        }
+
+        throw new Exception("No field in given playboard has indices ".$rowIndex."-".$colIndex);
+    }
+
+    private function createFrame()
+    {
+        $fields = $this->createFields($this->baseSize);
+        $this->fields = $fields;
+        $this->rows = $this->createRows($fields);
+        $this->cols = $this->createColumns($fields);
+        $this->blocks = $this->createBlocks($fields);        
     }
 
     public function getFields(): array
@@ -164,7 +201,7 @@ class Playboard
         return $html;
     }
 
-    private function isValid(): bool
+    public function isValid(): bool
     {
         $digitGroups = array_merge($this->blocks, $this->rows, $this->cols);
 
