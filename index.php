@@ -19,13 +19,6 @@ use src\models\Game;
 <body>
     <h1>Sudoku</h1>
 
-    <div id="playboardWrapper">
-        <?php
-            $game = new Game();
-            echo $game->initializeGame(3);
-        ?>
-    </div>
-
     <div class="mt-10">
         <button id="createNewGame">New game</button>
         <label>with base size</label>
@@ -39,6 +32,8 @@ use src\models\Game;
     <div class="mt-10">
         <button id="restartGame">Restart game</button>
     </div>
+
+    <div class="mt-10" id="playboardWrapper"></div>
 
 </body>
 </html>
