@@ -3,7 +3,8 @@ spl_autoload_register(function ($class) {
     include str_replace("\\", "/", $class) . '.php';
 });
 
-use src\models\Playboard;
+use src\models\Game;
+
 ?>
 
 <!DOCTYPE html>
@@ -20,8 +21,8 @@ use src\models\Playboard;
 
     <div id="playboardWrapper">
         <?php
-        $playboard = new Playboard(3);
-        echo $playboard->generatePlayboardHtml();
+            $game = new Game();
+            echo $game->initializeGame(3);
         ?>
     </div>
 
