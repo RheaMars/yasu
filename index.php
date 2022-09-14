@@ -13,7 +13,7 @@ use src\models\Game;
     <meta charset="UTF-8">
     <title>Sudoku</title>
     <link href="css/playboard.css" rel="stylesheet">
-    <script src="js/ext/jquery-3.6.1.js"></script>
+    <script src="js/ext/jquery-3.6.1.min.js"></script>
     <script src="js/app.js"></script>
 </head>
 <body>
@@ -26,8 +26,12 @@ use src\models\Game;
         ?>
     </div>
 
-    <div>
+    <div class="mt-10">
         <button id="createNewGame">New game</button>
+    </div>
+
+    <div class="mt-10">
+        <button id="restartGame">Restart game</button>
     </div>
 
 </body>
