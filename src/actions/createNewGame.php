@@ -8,5 +8,7 @@ spl_autoload_register(function ($class) {
 
 use src\models\Game;
 
+$baseSize = $_POST["baseSize"];
+
 $game = new Game();
-echo $game->initializeGame(3);
+echo $game->initializeGame($baseSize);
