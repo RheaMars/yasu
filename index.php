@@ -28,6 +28,12 @@ use src\models\Game;
 
     <div class="mt-10">
         <button id="createNewGame">New game</button>
+        <label>with base size</label>
+        <select id="selectBaseSize">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+        </select>
     </div>
 
     <div class="mt-10">
