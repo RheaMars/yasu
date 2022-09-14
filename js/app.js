@@ -1,14 +1,9 @@
 $(document).ready(function () {
 
+    requestNewGame();
+
     $("#createNewGame").click(function() {
-        $.ajax({
-            url: "src/actions/createNewGame.php",
-            method: "POST",
-            data: { baseSize: $("#selectBaseSize").val() },
-            success: function(result) {
-                $("#playboardWrapper").html(result);
-            }
-        });
+        requestNewGame();
     });
 
     $("#restartGame").click(function() {
@@ -17,3 +12,14 @@ $(document).ready(function () {
         }).val("");
     });
 })
+
+function requestNewGame() {
+    $.ajax({
+        url: "src/actions/createNewGame.php",
+        method: "POST",
+        data: { baseSize: $("#selectBaseSize").val() },
+        success: function(result) {
+            $("#playboardWrapper").html(result);
+        }
+    });
+}
