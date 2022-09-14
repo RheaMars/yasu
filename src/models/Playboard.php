@@ -19,7 +19,9 @@ class Playboard
     /** @var Block[] */
     private array $blocks = [];
 
-    public function __construct(int $baseSize)
+    private bool $isCorrectlyInitialized = false;
+
+    public function __construct(int $baseSize, float $level)
     {
         if ($baseSize < 1) {
             throw new Exception("Base size must be at least 1.");
@@ -34,9 +36,10 @@ class Playboard
         $this->blocks = $this->createBlocks($fields);
 
         $this->prefillFields();
-        $this->emptyFieldsByPercentage(0.7);
-        $this->setPrefilledFieldsToFixed();
-
+        if ($this->isValid() && $this->isComplete()) {
+            $this->isCorrectlyInitialized = true;
+            $this->prepareForGame($level);
+        }
     }
 
     public function getFields(): array
@@ -108,6 +111,11 @@ class Playboard
             $block->addField($field);
         }
         return $blocks;
+    }
+
+    public function isCorrectlyInitialized(): bool
+    {
+        return $this->isCorrectlyInitialized;
     }
 
     public function generatePlayboardHtml(): string
@@ -213,10 +221,17 @@ class Playboard
         return $indices;
     }
 
+    /**At the moment, level here means percentage of fields to empty */
+    private function prepareForGame(float $level): void
+    {
+        $this->emptyFieldsByPercentage($level);
+        $this->setPrefilledFieldsToFixed();
+    }
+
     private function emptyFieldsByPercentage(float $percentage): void
     {
         if ($percentage < 0.0 || $percentage > 1.0) {
-            throw new Exception("Percentage must be between 0 and 1");
+            throw new Exception("Percentage must be between 0.0 and 1.0");
         }
 
         switch ($percentage) {
