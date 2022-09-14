@@ -131,13 +131,16 @@ class Playboard
                         $field = $fields[$row."-".$col];
                         $value = $field->getDigit()->getValue();
 
-                        $html .= "<td>";
+                        $disabledProperty = "";
+                        $fixedClass = "";
+
                         if ($field->isValueFixed()){
-                            $html .= "<div class='field isFixed row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."'>".$value."</div>";
+                            $disabledProperty = "disabled";
+                            $fixedClass = "isFixed";
                         }
-                        else {
-                            $html .= "<input class='field row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
-                        }
+
+                        $html .= "<td class='" . $fixedClass . "'>";
+                        $html .= "<input " . $disabledProperty . " class='field " . $fixedClass ." row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
                         $html .= "</td>";
                     }
                     $html .= "</tr>";

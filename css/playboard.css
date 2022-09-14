@@ -39,6 +39,11 @@ table.playboard, td {
     border: 0 none;
 }
 
-.isFixed {
+input.isFixed {
     font-weight: bold;
+    background-color: #ececec;
+}
+
+td.isFixed {
+    background-color: #ececec;
 }
