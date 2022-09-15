@@ -265,15 +265,117 @@ class Playboard
     {
         $maxRounds = 100 * pow($this->baseSize, 2);
         //$this->prefillFieldsRandomly();
-        $this->prefillFieldsByBlocksDiagonally($maxRounds);
+        // $this->prefillFieldsByBlocksDiagonally($maxRounds);
         //$this->prefillFieldsByRows($maxRounds);
         //$this->prefillFieldsByPlayboardRows($maxRounds);
+        $this->prefillFieldsByBlocksCyclically();
     }
 
     private function prefillFieldsRandomly(): void
     {
         foreach ($this->fields as $field) {
             $field->setDigit(Digit::getRandomDigit($this->baseSize));
+        }
+    }
+
+    private function prefillFieldsByBlocksCyclically(): void
+    {
+        $digits = range(1, pow($this->baseSize, 2));
+        shuffle($digits);
+        $digitUnits = $this->getValueUnits($digits)["rowUnits"];
+
+        $sortedBlockIndices = $this->getBlockIndices();
+
+        foreach ($sortedBlockIndices as $blockIndex) {
+            $block = $this->blocks[$blockIndex["row"]."-".$blockIndex["col"]];
+
+            $parentBlockIndex = $this->getCycleParentBlockIndex($blockIndex["row"], $blockIndex["col"]);
+
+            // prefill fields of first block
+            if (null === $parentBlockIndex){
+                $this->prefillBlockByUnits($block, $digitUnits);
+            }
+            else{
+                $parentBlock = $this->blocks[$parentBlockIndex["row"]."-".$parentBlockIndex["col"]];
+
+                // prefill from left parent
+                if ($parentBlock->getPlayboardRowIndex() === $block->getPlayboardRowIndex()){
+                    $parentRows = [];
+                    
+                    for ($i = 1; $i <= $this->baseSize; $i++){
+                        $parentRows[] = $parentBlock->getFieldsFromBlockRow($i);
+                    }
+                    $parentRows = $this->nextCyclicPermutation($parentRows);
+                    
+                    $parentValues = $this->getValuesFromFields(array_merge(...$parentRows));
+                    $this->prefillBlockByUnits($block, $parentValues["rowUnits"]);
+                }
+                // prefill from upper parent
+                else{
+                    $parentCols = [];
+                    
+                    for ($i = 1; $i <= $this->baseSize; $i++){
+                        $parentCols[] = $parentBlock->getFieldsFromBlockColumn($i);
+                    }
+                    $parentCols = $this->nextCyclicPermutation($parentCols);
+                    
+                    $parentValues = $this->getValuesFromFields(array_merge(...$parentCols));
+                    $this->prefillBlockByUnits($block, $parentValues["colUnits"]);
+                }
+            }
+        }
+    }
+
+    // TODO: is this necessary?
+    private function getBlockIndices(): array
+    {
+        $indices = [];
+        foreach ($this->blocks as $block) {
+            $indices[] = [
+                "row" => $block->getPlayboardRowIndex(),
+                "col" => $block->getPlayboardColIndex()
+            ];
+        }
+
+        return $indices;
+    }
+
+    private function getValueUnits(array $digits): array
+    {
+        $rowUnits = array_chunk($digits, $this->baseSize);
+        $colUnits = [];
+        for ($i = 0; $i < $this->baseSize; $i++){
+            $colUnits[$i] = [];
+            foreach ($rowUnits as $row) {
+                $colUnits[$i] = array_merge($colUnits[$i], [$row[$i]]);
+            }
+        }
+
+        return ["rowUnits" => $rowUnits, "colUnits" => $colUnits];
+    }
+
+    private function nextCyclicPermutation(array $list): array
+    {
+        $head = array_shift($list);
+        return array_merge($list, [$head]);
+    }
+
+    private function getValuesFromFields(array $fields): array
+    {
+        $values = array_map(function ($field) {return $field->getDigit()->getValue();}, $fields);
+        return $this->getValueUnits($values);
+    }
+
+    private function getCycleParentBlockIndex(int $playboardRowIndex, int $playboardColIndex): ?array
+    {
+        if ($playboardRowIndex === 1 && $playboardColIndex === 1){
+            return null;
+        }
+        if ($playboardColIndex > 1){
+            return ["row" => $playboardRowIndex, "col" => $playboardColIndex -1];
+        }
+        if ($playboardRowIndex > 1){
+            return ["row" => $playboardRowIndex - 1, "col" => $playboardColIndex];
         }
     }
 
@@ -294,10 +396,10 @@ class Playboard
 
                     $block = $this->blocks[$blockIndex["row"]."-".$blockIndex["col"]];
 
-                    $fieldsOfBlock = $block->getFields();
-                    shuffle($fieldsOfBlock);
+                    $blockFields = $block->getFields();
+                    shuffle($blockFields);
 
-                    foreach ($fieldsOfBlock as $field) {
+                    foreach ($blockFields as $field) {
 
                         if (null !== $field->getDigit()->getValue()) {
                             continue;
@@ -326,6 +428,16 @@ class Playboard
         }
     }
 
+    private function prefillBlockByUnits(Block $block, array $rows): void
+    {
+        for ($i = 1; $i <= $this->baseSize; $i++){
+            for ($j = 1; $j <= $this->baseSize; $j++){
+                $field = $block->getFieldFromBlockCoordinates($i, $j);
+                $field->setDigit(new Digit($rows[$i - 1][$j - 1], $this->baseSize));
+            }
+        }
+    }
+
     private function prefillFieldsByPlayboardRows(int $maxRounds): void
     {
         $digits = range(1, pow($this->baseSize, 2));
@@ -339,10 +451,10 @@ class Playboard
             foreach ($digits as $digit) {
                 foreach ($this->blocks as $block) {
 
-                    $fieldsOfBlock = $block->getFields();
-                    shuffle($fieldsOfBlock);
+                    $blockFields = $block->getFields();
+                    shuffle($blockFields);
 
-                    foreach ($fieldsOfBlock as $field) {
+                    foreach ($blockFields as $field) {
 
                         if (null !== $field->getDigit()->getValue()) {
                             continue;
