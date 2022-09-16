@@ -235,6 +235,9 @@ class Playboard
     /**At the moment, level here means percentage of fields to empty */
     private function prepareForGame(float $level): void
     {
+        // TODO: use randomization methods here:
+        // operations on a sudoku board that preserve validity
+        // but hopefully make the board look more random
         $this->emptyFieldsByPercentage($level);
         $this->setPrefilledFieldsToFixed();
     }
@@ -275,10 +278,10 @@ class Playboard
     private function prefillFields(): void
     {
         $maxRounds = 100 * pow($this->baseSize, 2);
-        //$this->prefillFieldsRandomly();
+        // $this->prefillFieldsRandomly();
         // $this->prefillFieldsByBlocksDiagonally($maxRounds);
-        //$this->prefillFieldsByRows($maxRounds);
-        //$this->prefillFieldsByPlayboardRows($maxRounds);
+        // $this->prefillFieldsByRows($maxRounds);
+        // $this->prefillFieldsByPlayboardRows($maxRounds);
         $this->prefillFieldsByPermutations();
     }
 
