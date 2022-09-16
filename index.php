@@ -30,14 +30,18 @@ use src\models\Game;
     </div>
 
     <div class="mt-10">
-        <button id="restartGame">Restart game</button>
-    </div>
-
-    <div class="mt-10">
         <img style="display:none" id="loadingGif" src="img/loading.gif"/>
     </div>
 
     <div class="mt-10" id="playboardWrapper"></div>
+
+    <div class="mt-10">
+        <button style="display:none" id="validateGame">Validate game</button>
+    </div>
+
+    <div class="mt-10">
+        <button style="display:none" id="restartGame">Restart game</button>
+    </div>
 
 </body>
 </html>

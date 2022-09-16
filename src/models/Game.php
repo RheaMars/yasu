@@ -6,7 +6,8 @@ class Game
 {
     public function initializeGame(int $baseSize, float $level = 0.6): string
     {
-        $playboard = new Playboard($baseSize, $level);
+        $playboard = new Playboard();
+        $playboard->initialize($baseSize, $level);
         if ($playboard->isCorrectlyInitialized()){
             return $playboard->generatePlayboardHtml();
         }

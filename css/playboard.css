@@ -47,3 +47,7 @@ input.isFixed {
 td.isFixed {
     background-color: #ececec;
 }
+
+td.invalidValue, td.invalidValue input {
+    background-color: #f28585;
+}

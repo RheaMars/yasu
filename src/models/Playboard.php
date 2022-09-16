@@ -21,25 +21,61 @@ class Playboard
 
     private bool $isCorrectlyInitialized = false;
 
-    public function __construct(int $baseSize, float $level)
+    public function initialize(int $baseSize, float $level)
     {
         if ($baseSize < 1) {
             throw new Exception("Base size must be at least 1.");
         }
         $this->baseSize = $baseSize;
 
-        // create fields, rows, columns, and blocks
-        $fields = $this->createFields($baseSize);
-        $this->fields = $fields;
-        $this->rows = $this->createRows($fields);
-        $this->cols = $this->createColumns($fields);
-        $this->blocks = $this->createBlocks($fields);
+        $this->createFrame();
 
         $this->prefillFields();
         if ($this->isValid() && $this->isComplete()) {
             $this->isCorrectlyInitialized = true;
             $this->prepareForGame($level);
         }
+    }
+
+    public function initializeFromData(array $data)
+    {
+        $this->baseSize = pow(sizeof($data), 1/4);
+
+        $this->createFrame();
+
+        foreach ($data as $fieldData) {
+            $field = $this->getFieldByIndices($fieldData["row"], $fieldData["col"]);
+            if ("" === $fieldData["val"]){
+                $field->setDigit(new Digit(null, $this->baseSize));
+            }
+            else {
+                $field->setDigit(new Digit((int)$fieldData["val"], $this->baseSize));
+            }
+
+            if ("true" === $fieldData["isFixed"]){
+                $field->setToFixed();
+            }
+        }
+    }
+
+    private function getFieldByIndices(int $rowIndex, int $colIndex): Field
+    {
+        foreach ($this->fields as $field){
+            if ($rowIndex === $field->getRowIndex() && $colIndex === $field->getColIndex()) {
+                return $field;
+            }
+        }
+
+        throw new Exception("No field in given playboard has indices ".$rowIndex."-".$colIndex);
+    }
+
+    private function createFrame()
+    {
+        $fields = $this->createFields($this->baseSize);
+        $this->fields = $fields;
+        $this->rows = $this->createRows($fields);
+        $this->cols = $this->createColumns($fields);
+        $this->blocks = $this->createBlocks($fields);        
     }
 
     public function getFields(): array
@@ -148,7 +184,15 @@ class Playboard
                         }
 
                         $html .= "<td class='" . $fixedClass . "'>";
-                        $html .= "<input " . $disabledProperty . " class='field " . $fixedClass ." row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
+                        $html .= "<input " . $disabledProperty . " 
+                            class='field " . $fixedClass ."'
+                            data-row='" . $row . "'
+                            data-col='" . $col . "'
+                            data-block-row='" . $blockRow . "'
+                            data-block-col='" . $blockCol . "'
+                            data-playboard-row='" . $playboardRow . "'
+                            data-playboard-col='" . $playboardCol . "'
+                            value='" . $value . "'/>";
                         $html .= "</td>";
                     }
                     $html .= "</tr>";
@@ -164,7 +208,7 @@ class Playboard
         return $html;
     }
 
-    private function isValid(): bool
+    public function isValid(): bool
     {
         $digitGroups = array_merge($this->blocks, $this->rows, $this->cols);
 
@@ -175,6 +219,45 @@ class Playboard
         }
 
         return true;
+    }
+
+    /**
+     * @return array Field[]
+     */
+    public function getInvalidFields(): array
+    {
+        $invalidFields = [];
+        $invalidFieldsIndices = [];
+
+        foreach($this->fields as $field) {
+            if ($field->isValueFixed() || null === $field->getDigit()->getValue()) {
+                continue;
+            }
+
+            $row = $this->rows[$field->getRowIndex()];
+            $col = $this->cols[$field->getColIndex()];
+            $block = $this->blocks[$field->getBlockIndex()];
+
+            $digitGroups = [$row, $col, $block];
+
+            foreach ($digitGroups as $group) {
+                foreach($group->getFields() as $fieldOfDigitGroup) {
+                    // skip the field that is currently checked
+                    if ($fieldOfDigitGroup->getRowIndex() === $field->getRowIndex()
+                        && $fieldOfDigitGroup->getColIndex() === $field->getColIndex()) {
+                        continue;
+                    }
+                    if ($field->getDigit()->getValue() === $fieldOfDigitGroup->getDigit()->getValue()) {
+                        if (!in_array($field->getRowIndex()."-".$field->getColIndex(), $invalidFieldsIndices)) {
+                            $invalidFields[] = $field;
+                            $invalidFieldsIndices[] = $field->getRowIndex()."-".$field->getColIndex();
+                        }
+                    }
+                }
+            }
+        }
+
+        return $invalidFields;
     }
 
     private function isComplete(): bool

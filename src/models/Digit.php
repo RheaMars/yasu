@@ -8,7 +8,7 @@ class Digit
 {
     private ?int $value;
 
-    public function __construct(?int $value, $baseSize)
+    public function __construct(?int $value, int $baseSize)
     {
         if (isset($value) && ($value < 1 || pow($baseSize, 2) < $value)) {
             throw new Exception("Non-empty values must be between 1 and ".pow($baseSize, 2));
