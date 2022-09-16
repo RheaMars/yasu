@@ -39,7 +39,6 @@ class Playboard
 
     public function initializeFromData(array $data)
     {
-
         $this->baseSize = pow(sizeof($data), 1/4);
 
         $this->createFrame();
@@ -185,7 +184,15 @@ class Playboard
                         }
 
                         $html .= "<td class='" . $fixedClass . "'>";
-                        $html .= "<input " . $disabledProperty . " class='field " . $fixedClass ." row-".$row." col-".$col." block-row-".$blockRow." block-col-".$blockCol." playboard-row-".$playboardRow." playboard-col-".$playboardCol."' value='".$value."'/>";
+                        $html .= "<input " . $disabledProperty . " 
+                            class='field " . $fixedClass ."'
+                            data-row='" . $row . "'
+                            data-col='" . $col . "'
+                            data-block-row='" . $blockRow . "'
+                            data-block-col='" . $blockCol . "'
+                            data-playboard-row='" . $playboardRow . "'
+                            data-playboard-col='" . $playboardCol . "'
+                            value='" . $value . "'/>";
                         $html .= "</td>";
                     }
                     $html .= "</tr>";
@@ -212,6 +219,45 @@ class Playboard
         }
 
         return true;
+    }
+
+    /**
+     * @return array Field[]
+     */
+    public function getInvalidFields(): array
+    {
+        $invalidFields = [];
+        $invalidFieldsIndices = [];
+
+        foreach($this->fields as $field) {
+            if ($field->isValueFixed() || null === $field->getDigit()->getValue()) {
+                continue;
+            }
+
+            $row = $this->rows[$field->getRowIndex()];
+            $col = $this->cols[$field->getColIndex()];
+            $block = $this->blocks[$field->getBlockIndex()];
+
+            $digitGroups = [$row, $col, $block];
+
+            foreach ($digitGroups as $group) {
+                foreach($group->getFields() as $fieldOfDigitGroup) {
+                    // skip the field which is currently checked
+                    if ($fieldOfDigitGroup->getRowIndex() === $field->getRowIndex()
+                        && $fieldOfDigitGroup->getColIndex() === $field->getColIndex()) {
+                        continue;
+                    }
+                    if ($field->getDigit()->getValue() === $fieldOfDigitGroup->getDigit()->getValue()) {
+                        if (!in_array($field->getRowIndex()."-".$field->getColIndex(), $invalidFieldsIndices)) {
+                            $invalidFields[] = $field;
+                            $invalidFieldsIndices[] = $field->getRowIndex()."-".$field->getColIndex();
+                        }
+                    }
+                }
+            }
+        }
+
+        return $invalidFields;
     }
 
     private function isComplete(): bool

@@ -8,17 +8,19 @@ spl_autoload_register(function ($class) {
     include "../../" . str_replace("\\", "/", $class) . '.php';
 });
 
-// use src\models\Game;
-
 $fieldData = $_POST["fieldData"];
-$numberOfFields = $_POST["numberOfFields"];
 
 $playboard = new Playboard();
 $playboard->initializeFromData($fieldData);
 
-if ($playboard->isValid()){
-    echo 1;
+$invalidFields = $playboard->getInvalidFields();
+
+$invalidFieldsPreparedForHtml = [];
+foreach ($invalidFields as $field) {
+    $invalidFieldsPreparedForHtml[] = [
+        "row" => $field->getRowIndex(),
+        "col" => $field->getColIndex()
+    ];
 }
-else {
-    echo 0;
-}
+
+echo json_encode($invalidFieldsPreparedForHtml);

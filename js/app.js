@@ -35,6 +35,10 @@ function requestNewGame() {
         data: { baseSize: $("#selectBaseSize").val() },
         success: function(result) {
             $("#playboardWrapper").html(result);
+
+            $("input.field").on("input", function() {
+                $(this).parent("td").removeClass("invalidValue");
+            });
         }
     });
 }
@@ -44,12 +48,10 @@ function validateGame() {
     let fieldData = [];
     
     $fields.each(function(index){
-        const classes = $(this).attr("class").split(" ");
-        
         fieldData.push(
             {
-                row: getFirstFoundSuffix(classes, "row-"),
-                col: getFirstFoundSuffix(classes, "col-"),
+                row: $(this).attr('data-row'),
+                col: $(this).attr('data-col'),
                 val: $(this).val(),
                 isFixed: $(this).hasClass("isFixed")
             }
@@ -60,30 +62,21 @@ function validateGame() {
         url: "src/actions/validateGame.php",
         method: "POST",
         data: {
-            numberOfFields: $fields.length,
             fieldData: fieldData
         },
-        success: function(result) {
-            if (result == 1){
-                alert("Valid!");
-            }
-            else{
-                alert("Damn...");
-            }
+        beforeSend: function() {
+            $("td").removeClass("invalidValue");
         },
-        error: function(error) {
-            alert("ERROR")
+        success: function(result) {
+            const invalidFields = JSON.parse(result);
+            if (invalidFields.length === 0) {
+                alert("Playboard is valid.");
+            }
+            else {
+                invalidFields.forEach((invalidField) => {
+                    $('.field[data-row="' + invalidField.row + '"][data-col="' + invalidField.col + '"]').parent("td").addClass("invalidValue");
+                });
+            }
         }
     })
-
-    function getFirstFoundSuffix(strings, startsWith){
-        let suffix = ""; 
-        $.each(strings, function(){
-            if (this.match("^" + startsWith)){
-                suffix = this.replace(startsWith, "");
-                return;
-            }
-        });
-        return suffix;
-    }
 }
