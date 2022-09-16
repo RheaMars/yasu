@@ -242,7 +242,7 @@ class Playboard
 
             foreach ($digitGroups as $group) {
                 foreach($group->getFields() as $fieldOfDigitGroup) {
-                    // skip the field which is currently checked
+                    // skip the field that is currently checked
                     if ($fieldOfDigitGroup->getRowIndex() === $field->getRowIndex()
                         && $fieldOfDigitGroup->getColIndex() === $field->getColIndex()) {
                         continue;
