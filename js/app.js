@@ -36,8 +36,17 @@ function requestNewGame() {
         success: function(result) {
             $("#playboardWrapper").html(result);
 
-            $("input.field").on("input", function() {
+            const maxNumberAllowed = Math.sqrt($(".field").length);
+
+            $("input.field").on("change", function() {
+
                 $(this).parent("td").removeClass("invalidValue");
+
+                const value = $(this).val();
+                if (!$.isNumeric(value) || value > maxNumberAllowed || value < 1) {
+                    alert("Only numbers between 1 and " + maxNumberAllowed + " are allowed as input.");
+                    $(this).val("");
+                }
             });
         }
     });
