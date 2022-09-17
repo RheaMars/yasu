@@ -5,7 +5,7 @@ namespace src\models;
 use Exception;
 use src\collections\FieldCollection;
 
-class Block extends DigitGroup
+class Block extends ValueGroup
 {
     private int $playboardRowIndex;
 
@@ -74,7 +74,7 @@ class Block extends DigitGroup
         for ($i = 1; $i <= $this->baseSize; $i++) {
             for ($j = 1; $j <= $this->baseSize; $j++) {
                 $field = $this->getFieldFromBlockIndices($i, $j);
-                $field->setDigit(new Digit($matrix[$i - 1][$j - 1]));
+                $field->setValue($matrix[$i - 1][$j - 1]);
             }
         }
     }

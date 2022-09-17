@@ -4,7 +4,6 @@ namespace src\collections;
 use ArrayObject;
 use Exception;
 use InvalidArgumentException;
-use src\models\Digit;
 use src\models\Field;
 
 class FieldCollection extends ArrayObject
@@ -34,11 +33,11 @@ class FieldCollection extends ArrayObject
         return new FieldCollection($flattened);
     }
 
-    public function getDigitValues(): IntegerCollection
+    public function getValues(): IntegerCollection
     {
         $integerCollection = new IntegerCollection();
         foreach ($this->getIterator() as $field) {
-            $integerCollection[] = $field->getDigit()->getValue();
+            $integerCollection[] = $field->getValue();
         }
         return $integerCollection;
     }
@@ -57,23 +56,23 @@ class FieldCollection extends ArrayObject
     public function setNonEmptyFieldsToFixed(): void
     {
         foreach ($this->getIterator() as $field) {
-            if (null !== $field->getDigit()->getValue()) {
+            if (null !== $field->getValue()) {
                 $field->setToFixed();
             }
         }
     }
 
-    public function emptyDigitValues(): void
+    public function emptyValues(): void
     {
         foreach ($this->getIterator() as $field) {
-            $field->setDigit(new Digit(null));
+            $field->setValue(null);
         }
     }
 
     public function prefillRandomly(int $size): void
     {
         foreach ($this->getIterator() as $field) {
-            $field->setDigit(Digit::getRandomDigit($size));
+            $field->setValue(rand(1, pow($size, 2)));
         }
     }
 

@@ -36,9 +36,9 @@ class Playboard
         foreach ($data as $fieldData) {
             $field = $this->fields->getFieldByIndices($fieldData["row"], $fieldData["col"]);
             if ("" === $fieldData["val"]) {
-                $field->setDigit(new Digit(null));
+                $field->setValue(null);
             } else {
-                $field->setDigit(new Digit((int)$fieldData["val"]));
+                $field->setValue((int)$fieldData["val"]);
             }
 
             if ("true" === $fieldData["isFixed"]) {
@@ -65,7 +65,7 @@ class Playboard
                         $row = ($playboardRow - 1) * $baseSize + $blockRow;
                         $col = ($playboardCol - 1) * $baseSize + $blockCol;
                         $field = $this->fields[$row . "-" . $col];
-                        $value = $field->getDigit()->getValue();
+                        $value = $field->getValue();
 
                         $disabledProperty = "";
                         $fixedClass = "";
@@ -102,10 +102,10 @@ class Playboard
 
     public function isValid(): bool
     {
-        $digitGroups = array_merge($this->blocks->toArray(), $this->rows->toArray(), $this->cols->toArray());
+        $valueGroups = array_merge($this->blocks->toArray(), $this->rows->toArray(), $this->cols->toArray());
 
-        foreach ($digitGroups as $group) {
-            /** @var $group DigitGroup */
+        foreach ($valueGroups as $group) {
+            /** @var $group ValueGroup */
             if (!$group->isValid()) {
                 return false;
             }
@@ -121,7 +121,7 @@ class Playboard
         $invalidFieldsIndices = [];
 
         foreach ($this->fields as $field) {
-            if ($field->isValueFixed() || null === $field->getDigit()->getValue()) {
+            if ($field->isValueFixed() || null === $field->getValue()) {
                 continue;
             }
 
@@ -129,17 +129,17 @@ class Playboard
             $col = $this->cols[$field->getColIndex()];
             $block = $this->blocks[$field->getBlockIndex()];
 
-            $digitGroups = [$row, $col, $block];
+            $valueGroups = [$row, $col, $block];
 
-            foreach ($digitGroups as $group) {
+            foreach ($valueGroups as $group) {
 
-                foreach ($group->getFields() as $fieldOfDigitGroup) {
+                foreach ($group->getFields() as $groupField) {
                     // skip the field that is currently checked
-                    if ($fieldOfDigitGroup->getRowIndex() === $field->getRowIndex()
-                        && $fieldOfDigitGroup->getColIndex() === $field->getColIndex()) {
+                    if ($groupField->getRowIndex() === $field->getRowIndex()
+                        && $groupField->getColIndex() === $field->getColIndex()) {
                         continue;
                     }
-                    if ($field->getDigit()->getValue() === $fieldOfDigitGroup->getDigit()->getValue()) {
+                    if ($field->getValue() === $groupField->getValue()) {
                         if (!in_array($field->getRowIndex() . "-" . $field->getColIndex(), $invalidFieldsIndices)) {
                             $invalidFields[] = $field;
                             $invalidFieldsIndices[] = $field->getRowIndex() . "-" . $field->getColIndex();
@@ -155,7 +155,7 @@ class Playboard
     public function isComplete(): bool
     {
         foreach ($this->fields as $field) {
-            if (null === $field->getDigit()->getValue()) {
+            if (null === $field->getValue()) {
                 return false;
             }
         }
@@ -176,14 +176,14 @@ class Playboard
             case 0.0:
                 return;
             case 1.0:
-                $this->fields->emptyDigitValues();
+                $this->fields->emptyValues();
                 break;
             default:
                 $numberOfFieldsToEmpty = (int)(round($percentage * pow($this->baseSize, 4)));
                 $randomFieldKeys = array_rand($this->fields->toArray(), $numberOfFieldsToEmpty);
                 foreach ($randomFieldKeys as $key) {
                     $field = $this->fields[$key];
-                    $field->setDigit(new Digit(null));
+                    $field->setValue(null);
                 }
         }
     }
@@ -199,8 +199,8 @@ class Playboard
         //$this->fields->prefillRandomly($this->baseSize);
         //$this->prefillFieldsByBlocksDiagonally($maxRounds);
         //$this->prefillFieldsByRows($maxRounds);
-        $this->prefillFieldsByPlayboardRows($maxRounds);
-        //$this->prefillFieldsByPermutations();
+        //$this->prefillFieldsByPlayboardRows($maxRounds);
+        $this->prefillFieldsByPermutations();
     }
 
     private function createEmptyPlayboard()
@@ -218,7 +218,7 @@ class Playboard
         $fields = new FieldCollection();
         for ($row = 1; $row <= pow($baseSize, 2); $row++) {
             for ($col = 1; $col <= pow($baseSize, 2); $col++) {
-                $fields[$row . "-" . $col] = new Field($baseSize, $row, $col, new Digit(null));
+                $fields[$row . "-" . $col] = new Field($baseSize, $row, $col, null);
             }
         }
         return $fields;
@@ -290,10 +290,10 @@ class Playboard
 
             // prefill fields of first block with randomly shuffled values
             if (null === $parentBlock) {
-                $digits = range(1, pow($this->baseSize, 2));
-                shuffle($digits);
-                $digitUnits = $this->createUnitMatrices(new IntegerCollection($digits))["rowUnits"];
-                $block->prefillFromMatrix($digitUnits);
+                $values = range(1, pow($this->baseSize, 2));
+                shuffle($values);
+                $valueUnits = $this->createUnitMatrices(new IntegerCollection($values))["rowUnits"];
+                $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
             else if ($parentBlock->getPlayboardRowIndex() === $block->getPlayboardRowIndex()) {
@@ -313,24 +313,23 @@ class Playboard
         $permutedUnits = $this->getNextCyclicPermutation($parentPermutationUnits);
         $fields = FieldCollection::merge($permutedUnits);
 
-        return $this->createUnitMatrices($fields->getDigitValues());
+        return $this->createUnitMatrices($fields->getValues());
     }
 
     /**
      * This returns an associative array of length 2,
      * where the first component "rowUnits" has an array of "row units" as a value,
      * and the second component "colUnits" has an array of "column units" as a value.
-     * In other words, this arranges the given digit values as matrix rows (first output)
+     * In other words, this arranges the given values as matrix rows (first output)
      * as well as matrix columns (second output).
      *
      * Example:
      * Input: [1, 2, 3, 4, 5, 6, 7, 8, 9]
      * Output: ["rowUnits" => [[1, 2, 3], [4, 5, 6], [7, 8, 9]], "colUnits" => [[1, 4, 7], [2, 5, 8], [3, 6, 9]]]
-     *
      */
-    private function createUnitMatrices(IntegerCollection $digitValues): array
+    private function createUnitMatrices(IntegerCollection $values): array
     {
-        $rowUnits = array_chunk($digitValues->toArray(), $this->baseSize);
+        $rowUnits = array_chunk($values->toArray(), $this->baseSize);
         $colUnits = [];
         for ($i = 0; $i < $this->baseSize; $i++) {
             $colUnits[$i] = [];
@@ -364,7 +363,7 @@ class Playboard
 
     private function prefillFieldsByBlocksDiagonally(int $maxRounds): void
     {
-        $digits = range(1, pow($this->baseSize, 2));
+        $values = range(1, pow($this->baseSize, 2));
 
         $sortedBlockIndices = $this->getBlockIndicesSortedDiagonally();
 
@@ -372,9 +371,9 @@ class Playboard
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())) {
             $counter++;
             $this->emptyFieldsByPercentage(1.0);
-            shuffle($digits);
+            shuffle($values);
 
-            foreach ($digits as $digit) {
+            foreach ($values as $value) {
                 foreach ($sortedBlockIndices as $blockIndex) {
 
                     $block = $this->blocks[$blockIndex["row"] . "-" . $blockIndex["col"]];
@@ -384,11 +383,11 @@ class Playboard
 
                     foreach ($blockFields as $field) {
 
-                        if (null !== $field->getDigit()->getValue()) {
+                        if (null !== $field->getValue()) {
                             continue;
                         }
 
-                        $field->setDigit(new Digit($digit));
+                        $field->setValue($value);
 
                         /** @var $row Row */
                         $row = $this->rows[$field->getRowIndex()];
@@ -400,11 +399,11 @@ class Playboard
                         if ($row->isValid() && $col->isValid() && $block->isValid()) {
                             break;
                         }
-                        $field->setDigit(new Digit(null));
+                        $field->setValue(null);
                     }
 
                     // if field could not be filled, the playboard is invalid - try again
-                    if (null === $field->getDigit()->getValue()) {
+                    if (null === $field->getValue()) {
                         break 2;
                     }
                 }
@@ -431,15 +430,15 @@ class Playboard
 
     private function prefillFieldsByPlayboardRows(int $maxRounds): void
     {
-        $digits = range(1, pow($this->baseSize, 2));
+        $values = range(1, pow($this->baseSize, 2));
 
         $counter = 0;
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())) {
             $counter++;
             $this->emptyFieldsByPercentage(1.0);
-            shuffle($digits);
+            shuffle($values);
 
-            foreach ($digits as $digit) {
+            foreach ($values as $value) {
                 foreach ($this->blocks as $block) {
 
                     $blockFields = $block->getFields()->toArray();
@@ -447,11 +446,11 @@ class Playboard
 
                     foreach ($blockFields as $field) {
 
-                        if (null !== $field->getDigit()->getValue()) {
+                        if (null !== $field->getValue()) {
                             continue;
                         }
 
-                        $field->setDigit(new Digit($digit));
+                        $field->setValue($value);
 
                         /** @var $row Row */
                         $row = $this->rows[$field->getRowIndex()];
@@ -464,11 +463,11 @@ class Playboard
                             break;
                         }
 
-                        $field->setDigit(new Digit(null));
+                        $field->setValue(null);
                     }
 
                     // if field could not be filled, the playboard is invalid - try again
-                    if (null === $field->getDigit()->getValue()) {
+                    if (null === $field->getValue()) {
                         break 2;
                     }
                 }
@@ -482,20 +481,20 @@ class Playboard
     private function prefillFieldsByRows(int $maxRounds): void
     {
 
-        $digits = range(1, pow($this->baseSize, 2));
+        $values = range(1, pow($this->baseSize, 2));
 
         $counter = 0;
         while ($counter < $maxRounds && !($this->isValid() && $this->isComplete())) {
             $counter++;
             $this->emptyFieldsByPercentage(1.0);
-            shuffle($digits);
+            shuffle($values);
 
             foreach ($this->fields as $field) {
                 $rowIndex = $field->getRowIndex();
                 $colIndex = $field->getColIndex();
                 $blockIndex = $field->getBlockIndex();
-                foreach ($digits as $digit) {
-                    $field->setDigit(new Digit($digit));
+                foreach ($values as $value) {
+                    $field->setValue($value);
 
                     /** @var $row Row */
                     $row = $this->rows[$rowIndex];
@@ -507,11 +506,11 @@ class Playboard
                     if ($row->isValid() && $col->isValid() && $block->isValid()) {
                         break;
                     }
-                    $field->setDigit(new Digit(null));
+                    $field->setValue(null);
                 }
 
                 // if field could not be filled, the playboard is invalid - try again
-                if (null === $field->getDigit()->getValue()) {
+                if (null === $field->getValue()) {
                     break;
                 }
             }

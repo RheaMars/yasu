@@ -18,15 +18,15 @@ class Field
 
     private int $blockColIndex;
 
-    private Digit $digit;
+    private ?int $value;
 
     private bool $isValueFixed;
 
-    public function __construct(int $baseSize, int $rowIndex, int $colIndex, Digit $digit, bool $isValueFixed = false)
+    public function __construct(int $baseSize, int $rowIndex, int $colIndex, ?int $value, bool $isValueFixed = false)
     {
         $this->rowIndex = $rowIndex;
         $this->colIndex = $colIndex;
-        $this->digit = $digit;
+        $this->value = $value;
         $this->isValueFixed = $isValueFixed;
 
         $rowQuotient = (int)($this->rowIndex / $baseSize);
@@ -38,7 +38,6 @@ class Field
         $colRemainder = $this->colIndex % $baseSize;
         $this->playboardColIndex = $colRemainder === 0 ? $colQuotient : $colQuotient + 1;
         $this->blockColIndex = $colRemainder === 0 ? $baseSize : $colRemainder;
-
     }
 
     public function __toString(): string
@@ -49,7 +48,7 @@ class Field
             "BlockCol: " . $this->blockColIndex . "<br/>" .
             "PlayboardRow: " . $this->playboardRowIndex . "<br/>" .
             "PlayboardCol: " . $this->playboardColIndex . "<br/>" .
-            "Digit-Value: " . $this->digit->getValue() . "<br/>" .
+            "Value: " . $this->value . "<br/>" .
             "IsValueFixed: " . $this->isValueFixed;
     }
 
@@ -88,14 +87,14 @@ class Field
         return $this->blockColIndex;
     }
 
-    public function getDigit(): Digit
+    public function getValue(): ?int
     {
-        return $this->digit;
+        return $this->value;
     }
 
-    public function setDigit(Digit $digit): void
+    public function setValue(?int $value): void
     {
-        $this->digit = $digit;
+        $this->value = $value;
     }
 
     public function setToFixed(): void

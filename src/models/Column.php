@@ -2,7 +2,7 @@
 
 namespace src\models;
 
-class Column extends DigitGroup
+class Column extends ValueGroup
 {
     public function __construct(int $index, int $baseSize)
     {
