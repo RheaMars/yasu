@@ -3,6 +3,7 @@
 namespace src\models;
 
 use src\collections\FieldCollection;
+use src\collections\ValueCollection;
 
 class ValueGroup
 {
@@ -43,19 +44,38 @@ class ValueGroup
 
     public function isValid(): bool
     {
-        $fieldValues = [];
+        if (0 === sizeof($this->getInvalidFields()->toArray())) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getInvalidFields(): FieldCollection
+    {
+        $values = $this->getValues()->toArray();
+
+        $duplicateValues = array_unique(array_values(array_diff_assoc($values, array_unique($values))));
+
+        $invalidFields = new FieldCollection();
 
         foreach ($this->fields as $field) {
-            $value = $field->getValue();
-            if ($value !== null) {
-                $fieldValues[] = $value;
+            if (null !== $field->getValue()
+                && !$field->isValueFixed()
+                && in_array($field->getValue(), $duplicateValues)) {
+                $invalidFields[] = $field;
             }
         }
 
-        if (sizeof($fieldValues) != sizeof(array_unique($fieldValues))) {
-            return false;
+        return $invalidFields;
+    }
+
+    private function getValues(): ValueCollection
+    {
+        $values = new ValueCollection();
+        foreach ($this->fields as $field) {
+            $values[] =  $field->getValue();
         }
-        return true;
+        return $values;
     }
 
 }

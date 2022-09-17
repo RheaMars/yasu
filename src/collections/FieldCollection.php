@@ -33,9 +33,9 @@ class FieldCollection extends ArrayObject
         return new FieldCollection($flattened);
     }
 
-    public function getValues(): IntegerCollection
+    public function getValues(): ValueCollection
     {
-        $integerCollection = new IntegerCollection();
+        $integerCollection = new ValueCollection();
         foreach ($this->getIterator() as $field) {
             $integerCollection[] = $field->getValue();
         }

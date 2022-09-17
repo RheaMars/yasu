@@ -127,54 +127,24 @@ class Playboard
 
     public function isValid(): bool
     {
-        $valueGroups = array_merge($this->blocks->toArray(), $this->rows->toArray(), $this->columns->toArray());
-
-        foreach ($valueGroups as $group) {
-            /** @var $group ValueGroup */
-            if (!$group->isValid()) {
-                return false;
-            }
+        if (0 === sizeof($this->getInvalidFields()->toArray())) {
+            return true;
         }
-
-        return true;
+        return false;
     }
 
-    // TODO Consider to refactor this method
     public function getInvalidFields(): FieldCollection
     {
-        $invalidFields = new FieldCollection();
-        $invalidFieldsIndices = [];
-
-        foreach ($this->fields as $field) {
-            if ($field->isValueFixed() || null === $field->getValue()) {
-                continue;
-            }
-
-            $row = $this->rows[$field->getRowIndex()];
-            $col = $this->columns[$field->getColIndex()];
-            $block = $this->blocks[$field->getBlockIndex()];
-
-            $valueGroups = [$row, $col, $block];
-
-            foreach ($valueGroups as $group) {
-
-                foreach ($group->getFields() as $groupField) {
-                    // skip the field that is currently checked
-                    if ($groupField->getRowIndex() === $field->getRowIndex()
-                        && $groupField->getColIndex() === $field->getColIndex()) {
-                        continue;
-                    }
-                    if ($field->getValue() === $groupField->getValue()) {
-                        if (!in_array($field->getRowIndex() . "-" . $field->getColIndex(), $invalidFieldsIndices)) {
-                            $invalidFields[] = $field;
-                            $invalidFieldsIndices[] = $field->getRowIndex() . "-" . $field->getColIndex();
-                        }
-                    }
-                }
+        $invalidFields = [];
+        $valueGroupCollections = [$this->rows, $this->columns, $this->blocks];
+        foreach ($valueGroupCollections as $groupCollection) {
+            foreach ($groupCollection as $group) {
+                $invalidFields[] = $group->getInvalidFields()->toArray();
             }
         }
+        $invalidFields = array_unique(array_merge(...$invalidFields), SORT_REGULAR);
 
-        return $invalidFields;
+        return new FieldCollection($invalidFields);
     }
 
     public function isComplete(): bool

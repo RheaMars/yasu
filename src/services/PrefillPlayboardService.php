@@ -3,7 +3,7 @@
 namespace src\services;
 
 use src\collections\FieldCollection;
-use src\collections\IntegerCollection;
+use src\collections\ValueCollection;
 use src\models\Block;
 use src\models\Column;
 use src\models\Playboard;
@@ -190,7 +190,7 @@ class PrefillPlayboardService
             if (null === $parentBlock) {
                 $values = range(1, pow($playboard->getBaseSize(), 2));
                 shuffle($values);
-                $valueUnits = $this->createUnitMatrices(new IntegerCollection($values), $playboard->getBaseSize())["rowUnits"];
+                $valueUnits = $this->createUnitMatrices(new ValueCollection($values), $playboard->getBaseSize())["rowUnits"];
                 $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
@@ -231,7 +231,7 @@ class PrefillPlayboardService
      * Input: [1, 2, 3, 4, 5, 6, 7, 8, 9]
      * Output: ["rowUnits" => [[1, 2, 3], [4, 5, 6], [7, 8, 9]], "colUnits" => [[1, 4, 7], [2, 5, 8], [3, 6, 9]]]
      */
-    private function createUnitMatrices(IntegerCollection $values, int $baseSize): array
+    private function createUnitMatrices(ValueCollection $values, int $baseSize): array
     {
         $rowUnits = array_chunk($values->toArray(), $baseSize);
         $colUnits = [];
