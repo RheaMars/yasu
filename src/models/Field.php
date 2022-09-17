@@ -78,6 +78,16 @@ class Field
         return $this->playboardColIndex;
     }
 
+    public function getBlockRowIndex(): int
+    {
+        return $this->blockRowIndex;
+    }
+
+    public function getBlockColIndex(): int
+    {
+        return $this->blockColIndex;
+    }
+
     public function getDigit(): Digit
     {
         return $this->digit;

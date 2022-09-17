@@ -88,6 +88,17 @@ class Playboard
         return $this->baseSize;
     }
 
+    private function getBlockByPlayboardCoordinates(int $playboardRowIndex, int $playboardColIndex): Block
+    {
+        foreach ($this->blocks as $block){
+            if ($playboardRowIndex === $block->getPlayboardRowIndex() && $playboardColIndex === $block->getPlayboardColIndex())
+            {
+                return $block;
+            }
+        }
+        throw new Exception("Could not find block with coordinates (".$playboardRowIndex.",".$playboardColIndex."), in playboard of base size ".$this->baseSize);
+    }
+
     private function createFields($baseSize): array
     {
         $fields = [];
@@ -307,6 +318,9 @@ class Playboard
     /**At the moment, level here means percentage of fields to empty */
     private function prepareForGame(float $level): void
     {
+        // TODO: use randomization methods here:
+        // operations on a sudoku board that preserve validity
+        // but hopefully make the board look more random
         $this->emptyFieldsByPercentage($level);
         $this->setPrefilledFieldsToFixed();
     }
@@ -347,16 +361,118 @@ class Playboard
     private function prefillFields(): void
     {
         $maxRounds = 100 * pow($this->baseSize, 2);
-        //$this->prefillFieldsRandomly();
-        $this->prefillFieldsByBlocksDiagonally($maxRounds);
-        //$this->prefillFieldsByRows($maxRounds);
-        //$this->prefillFieldsByPlayboardRows($maxRounds);
+        // $this->prefillFieldsRandomly();
+        // $this->prefillFieldsByBlocksDiagonally($maxRounds);
+        // $this->prefillFieldsByRows($maxRounds);
+        // $this->prefillFieldsByPlayboardRows($maxRounds);
+        $this->prefillFieldsByPermutations();
     }
 
     private function prefillFieldsRandomly(): void
     {
         foreach ($this->fields as $field) {
             $field->setDigit(Digit::getRandomDigit($this->baseSize));
+        }
+    }
+
+    /**
+     * This prefills the fields of the first block in a shuffled manner
+     * and then fills the next blocks based on a "parent block" (left or upper),
+     * by permuting the block rows or columns of the latter.
+     * It is a non-brute-force method to prefill fields.
+     */
+    private function prefillFieldsByPermutations(): void
+    {
+        $digits = range(1, pow($this->baseSize, 2));
+        shuffle($digits);
+        $digitUnits = $this->groupDigitValuesIntoRowAndColumnUnits($digits)["rowUnits"];
+
+        foreach ($this->blocks as $block) {
+
+            $parentBlock = $this->getParentBlock($block);
+
+            // prefill fields of first block
+            if (null === $parentBlock){
+                $this->prefillBlockByUnits($block, $digitUnits);
+            }
+            // prefill from left parent
+            else if ($parentBlock->getPlayboardRowIndex() === $block->getPlayboardRowIndex()) {
+                $this->prefillBlockFromParent($block, $parentBlock, "rowUnits");
+            }
+            // prefill from upper parent
+            else{
+                $this->prefillBlockFromParent($block, $parentBlock, "colUnits");
+            }
+        }
+    }
+
+    private function prefillBlockFromParent(Block $block, Block $parentBlock, string $unitType): void
+    {
+        $parentUnits = [];
+        
+        for ($i = 1; $i <= $this->baseSize; $i++){
+            if ("rowUnits" === $unitType) {
+                $parentUnits[] = $parentBlock->getFieldsFromBlockRow($i);
+            }
+            else if ("colUnits" === $unitType) {
+                $parentUnits[] = $parentBlock->getFieldsFromBlockColumn($i);
+            }
+        }
+        $units = $this->getNextCyclicPermutation($parentUnits);
+        $values = $this->getValuesFromFields(array_merge(...$units));
+        $valueUnits = $this->groupDigitValuesIntoRowAndColumnUnits($values);
+        $this->prefillBlockByUnits($block, $valueUnits[$unitType]);
+    }
+
+    /**
+     * This returns an associative array of length 2,
+     * where the first component "rowUnits" has an array of "row units" as a value,
+     * and the second component "colUnits" has an array of "column units" as a value.
+     * In other words, this arranges the given digit values as matrix rows (first output)
+     * as well as matrix columns (second output).
+     * 
+     * @param $digits int[]
+     */
+    private function groupDigitValuesIntoRowAndColumnUnits(array $digits): array
+    {
+        $rowUnits = array_chunk($digits, $this->baseSize);
+        $colUnits = [];
+        for ($i = 0; $i < $this->baseSize; $i++){
+            $colUnits[$i] = [];
+            foreach ($rowUnits as $row) {
+                $colUnits[$i] = array_merge($colUnits[$i], [$row[$i]]);
+            }
+        }
+
+        return ["rowUnits" => $rowUnits, "colUnits" => $colUnits];
+    }
+
+    private function getNextCyclicPermutation(array $list): array
+    {
+        $head = array_shift($list);
+        return array_merge($list, [$head]);
+    }
+
+    // TODO: consider refactoring into non-functional dialect
+    private function getValuesFromFields(array $fields): array
+    {
+        return array_map(
+            function ($field) {
+                return $field->getDigit()->getValue();
+            },
+            $fields);
+    }
+
+    private function getParentBlock(Block $block): ?Block
+    {
+        if (1 === $block->getPlayboardRowIndex() && 1 === $block->getPlayboardColIndex()){
+            return null;
+        }
+        if (1 < $block->getPlayboardColIndex()){
+            return $this->getBlockByPlayboardCoordinates($block->getPlayboardRowIndex(), $block->getPlayboardColIndex() - 1);
+        }
+        if (1 < $block->getPlayboardRowIndex()){
+            return $this->getBlockByPlayboardCoordinates($block->getPlayboardRowIndex() - 1, $block->getPlayboardColIndex());
         }
     }
 
@@ -377,10 +493,10 @@ class Playboard
 
                     $block = $this->blocks[$blockIndex["row"]."-".$blockIndex["col"]];
 
-                    $fieldsOfBlock = $block->getFields();
-                    shuffle($fieldsOfBlock);
+                    $blockFields = $block->getFields();
+                    shuffle($blockFields);
 
-                    foreach ($fieldsOfBlock as $field) {
+                    foreach ($blockFields as $field) {
 
                         if (null !== $field->getDigit()->getValue()) {
                             continue;
@@ -409,6 +525,16 @@ class Playboard
         }
     }
 
+    private function prefillBlockByUnits(Block $block, array $rows): void
+    {
+        for ($i = 1; $i <= $this->baseSize; $i++){
+            for ($j = 1; $j <= $this->baseSize; $j++){
+                $field = $block->getFieldFromBlockCoordinates($i, $j);
+                $field->setDigit(new Digit($rows[$i - 1][$j - 1], $this->baseSize));
+            }
+        }
+    }
+
     private function prefillFieldsByPlayboardRows(int $maxRounds): void
     {
         $digits = range(1, pow($this->baseSize, 2));
@@ -422,10 +548,10 @@ class Playboard
             foreach ($digits as $digit) {
                 foreach ($this->blocks as $block) {
 
-                    $fieldsOfBlock = $block->getFields();
-                    shuffle($fieldsOfBlock);
+                    $blockFields = $block->getFields();
+                    shuffle($blockFields);
 
-                    foreach ($fieldsOfBlock as $field) {
+                    foreach ($blockFields as $field) {
 
                         if (null !== $field->getDigit()->getValue()) {
                             continue;

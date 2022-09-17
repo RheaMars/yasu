@@ -26,4 +26,36 @@ class Block extends DigitGroup
     {
         return $this->playboardColIndex;
     }
+
+    public function getFieldsFromBlockRow(int $blockRowIndex): array
+    {
+        $fields = [];
+        foreach ($this->getFields() as $field){
+            if ($blockRowIndex === $field->getBlockRowIndex()){
+                $fields[] = $field;
+            }
+        }
+        return $fields;
+    }
+
+    public function getFieldsFromBlockColumn(int $blockColIndex): array
+    {
+        $fields = [];
+        foreach ($this->getFields() as $field){
+            if ($blockColIndex === $field->getBlockColIndex()){
+                $fields[] = $field;
+            }
+        }
+        return $fields;
+    }
+
+    public function getFieldFromBlockCoordinates(int $blockRowIndex, int $blockColIndex): ?Field
+    {
+        foreach ($this->getFields() as $field){
+            if ($blockRowIndex === $field->getBlockRowIndex() && $blockColIndex === $field->getBlockColIndex()){
+                return $field;
+            }
+        }
+        return null;
+    }
 }
