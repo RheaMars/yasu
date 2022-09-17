@@ -71,11 +71,6 @@ class ValueGroup
 
     private function getValues(): ValueCollection
     {
-        $values = new ValueCollection();
-        foreach ($this->fields as $field) {
-            $values[] =  $field->getValue();
-        }
-        return $values;
+        return $this->fields->getValues();
     }
-
 }

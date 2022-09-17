@@ -149,12 +149,7 @@ class Playboard
 
     public function isComplete(): bool
     {
-        foreach ($this->fields as $field) {
-            if (null === $field->getValue()) {
-                return false;
-            }
-        }
-        return true;
+        return $this->fields->allValuesSet();
     }
 
     public function emptyFieldsByPercentage(float $percentage): void
