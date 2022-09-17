@@ -2,6 +2,8 @@
 
 namespace src\models;
 
+use src\collections\FieldCollection;
+
 class Block extends DigitGroup
 {
     private int $playboardRowIndex;
@@ -27,9 +29,9 @@ class Block extends DigitGroup
         return $this->playboardColIndex;
     }
 
-    public function getFieldsFromBlockRow(int $blockRowIndex): array
+    public function getFieldsFromBlockRow(int $blockRowIndex): FieldCollection
     {
-        $fields = [];
+        $fields = new FieldCollection();
         foreach ($this->getFields() as $field){
             if ($blockRowIndex === $field->getBlockRowIndex()){
                 $fields[] = $field;
@@ -38,9 +40,9 @@ class Block extends DigitGroup
         return $fields;
     }
 
-    public function getFieldsFromBlockColumn(int $blockColIndex): array
+    public function getFieldsFromBlockColumn(int $blockColIndex): FieldCollection
     {
-        $fields = [];
+        $fields = new FieldCollection();
         foreach ($this->getFields() as $field){
             if ($blockColIndex === $field->getBlockColIndex()){
                 $fields[] = $field;

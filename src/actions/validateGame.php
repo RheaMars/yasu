@@ -10,7 +10,8 @@ spl_autoload_register(function ($class) {
 
 $fieldData = $_POST["fieldData"];
 
-$playboard = new Playboard();
+$baseSize = pow(sizeof($fieldData), 1/4);
+$playboard = new Playboard($baseSize);
 $playboard->initializeFromData($fieldData);
 
 $invalidFields = $playboard->getInvalidFields();

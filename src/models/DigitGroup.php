@@ -2,18 +2,20 @@
 
 namespace src\models;
 
+use src\collections\FieldCollection;
+
 class DigitGroup
 {
     protected string $type;
 
     private int|string $index;
 
-    /** @var Field[] */
-    private array $fields = [];
+    private FieldCollection $fields;
 
     public function __construct(int|string $index)
     {
         $this->index = $index;
+        $this->fields = new FieldCollection();
     }
 
     public function addField(Field $field): void
@@ -21,7 +23,7 @@ class DigitGroup
         $this->fields[] = $field;
     }
 
-    public function getFields(): array
+    public function getFields(): FieldCollection
     {
         return $this->fields;
     }
