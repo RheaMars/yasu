@@ -10,12 +10,15 @@ class DigitGroup
 
     private int|string $index;
 
+    protected int $baseSize;
+
     private FieldCollection $fields;
 
-    public function __construct(int|string $index)
+    public function __construct(int|string $index, int $baseSize)
     {
         $this->index = $index;
         $this->fields = new FieldCollection();
+        $this->baseSize = $baseSize;
     }
 
     public function addField(Field $field): void
@@ -36,6 +39,23 @@ class DigitGroup
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function isValid(): bool
+    {
+        $fieldValues = [];
+
+        foreach ($this->fields as $field) {
+            $value = $field->getDigit()->getValue();
+            if ($value !== null) {
+                $fieldValues[] = $value;
+            }
+        }
+
+        if (sizeof($fieldValues) != sizeof(array_unique($fieldValues))) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -2,7 +2,9 @@
 namespace src\collections;
 
 use ArrayObject;
+use Exception;
 use InvalidArgumentException;
+use src\models\Digit;
 use src\models\Field;
 
 class FieldCollection extends ArrayObject
@@ -40,4 +42,39 @@ class FieldCollection extends ArrayObject
         }
         return $integerCollection;
     }
+
+    public function getFieldByIndices(int $rowIndex, int $colIndex): Field
+    {
+        foreach ($this->getIterator() as $field) {
+            if ($rowIndex === $field->getRowIndex() && $colIndex === $field->getColIndex()) {
+                return $field;
+            }
+        }
+
+        throw new Exception("No field in given field collection has indices " . $rowIndex . "-" . $colIndex);
+    }
+
+    public function setNonEmptyFieldsToFixed(): void
+    {
+        foreach ($this->getIterator() as $field) {
+            if (null !== $field->getDigit()->getValue()) {
+                $field->setToFixed();
+            }
+        }
+    }
+
+    public function emptyDigitValues(): void
+    {
+        foreach ($this->getIterator() as $field) {
+            $field->setDigit(new Digit(null));
+        }
+    }
+
+    public function prefillRandomly(int $size): void
+    {
+        foreach ($this->getIterator() as $field) {
+            $field->setDigit(Digit::getRandomDigit($size));
+        }
+    }
+
 }

@@ -2,17 +2,12 @@
 
 namespace src\models;
 
-use Exception;
-
 class Digit
 {
     private ?int $value;
 
-    public function __construct(?int $value, int $baseSize)
+    public function __construct(?int $value)
     {
-        if (isset($value) && ($value < 1 || pow($baseSize, 2) < $value)) {
-            throw new Exception("Non-empty values must be between 1 and ".pow($baseSize, 2));
-        }
         $this->value = $value;
     }
 
@@ -23,6 +18,6 @@ class Digit
 
     public static function getRandomDigit(int $baseSize): Digit
     {
-        return new Digit(rand(1, pow($baseSize, 2)), $baseSize);
+        return new Digit(rand(1, pow($baseSize, 2)));
     }
 }

@@ -2,6 +2,7 @@
 namespace src\collections;
 
 use ArrayObject;
+use Exception;
 use InvalidArgumentException;
 use src\models\Block;
 
@@ -19,5 +20,15 @@ class BlockCollection extends ArrayObject
     public function toArray(): array
     {
         return iterator_to_array($this->getIterator());
+    }
+
+    public function getBlockByPlayboardIndices(int $playboardRowIndex, int $playboardColIndex): Block
+    {
+        foreach ($this->getIterator() as $block) {
+            if ($playboardRowIndex === $block->getPlayboardRowIndex() && $playboardColIndex === $block->getPlayboardColIndex()) {
+                return $block;
+            }
+        }
+        throw new Exception("Could not find block with indices (" . $playboardRowIndex . "," . $playboardColIndex . ") in block collection");
     }
 }

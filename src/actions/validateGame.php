@@ -12,7 +12,7 @@ $fieldData = $_POST["fieldData"];
 
 $baseSize = pow(sizeof($fieldData), 1/4);
 $playboard = new Playboard($baseSize);
-$playboard->initializeFromData($fieldData);
+$playboard->setFieldsFromData($fieldData);
 
 $invalidFields = $playboard->getInvalidFields();
 
