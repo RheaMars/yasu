@@ -23,9 +23,11 @@ use src\models\Game;
         <button id="createNewGame">New game</button>
         <label for="selectBaseSize">with base size</label>
         <select id="selectBaseSize">
+            <option value="1">1</option>
             <option value="2">2</option>
             <option value="3" selected>3</option>
             <option value="4">4</option>
+            <option value="5">5</option>
         </select>
     </div>
 

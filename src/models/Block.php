@@ -2,15 +2,18 @@
 
 namespace src\models;
 
-class Block extends DigitGroup
+use Exception;
+use src\collections\FieldCollection;
+
+class Block extends ValueGroup
 {
     private int $playboardRowIndex;
 
     private int $playboardColIndex;
 
-    public function __construct(string $index, int $playboardRowIndex, int $playboardColIndex)
+    public function __construct(string $index, int $playboardRowIndex, int $playboardColIndex, int $baseSize)
     {
-        parent::__construct($index);
+        parent::__construct($index, $baseSize);
         $this->type = "block";
 
         $this->playboardRowIndex = $playboardRowIndex;
@@ -27,9 +30,9 @@ class Block extends DigitGroup
         return $this->playboardColIndex;
     }
 
-    public function getFieldsFromBlockRow(int $blockRowIndex): array
+    public function getFieldsFromBlockRow(int $blockRowIndex): FieldCollection
     {
-        $fields = [];
+        $fields = new FieldCollection();
         foreach ($this->getFields() as $field){
             if ($blockRowIndex === $field->getBlockRowIndex()){
                 $fields[] = $field;
@@ -38,9 +41,9 @@ class Block extends DigitGroup
         return $fields;
     }
 
-    public function getFieldsFromBlockColumn(int $blockColIndex): array
+    public function getFieldsFromBlockColumn(int $blockColIndex): FieldCollection
     {
-        $fields = [];
+        $fields = new FieldCollection();
         foreach ($this->getFields() as $field){
             if ($blockColIndex === $field->getBlockColIndex()){
                 $fields[] = $field;
@@ -49,7 +52,7 @@ class Block extends DigitGroup
         return $fields;
     }
 
-    public function getFieldFromBlockCoordinates(int $blockRowIndex, int $blockColIndex): ?Field
+    public function getFieldFromBlockIndices(int $blockRowIndex, int $blockColIndex): ?Field
     {
         foreach ($this->getFields() as $field){
             if ($blockRowIndex === $field->getBlockRowIndex() && $blockColIndex === $field->getBlockColIndex()){
@@ -57,5 +60,40 @@ class Block extends DigitGroup
             }
         }
         return null;
+    }
+
+    /**
+     * Prefill from matrix rows or columns.
+     */
+    public function prefillFromMatrix(array $matrix): void
+    {
+        if (count($matrix) != $this->baseSize) {
+            throw new Exception("Can't prefill from matrix - wrong dimensions");
+        }
+
+        for ($i = 1; $i <= $this->baseSize; $i++) {
+            for ($j = 1; $j <= $this->baseSize; $j++) {
+                $field = $this->getFieldFromBlockIndices($i, $j);
+                $field->setValue($matrix[$i - 1][$j - 1]);
+            }
+        }
+    }
+
+    public function getAsMatrixRows(): array
+    {
+        $matrixRows = [];
+        for ($i = 1; $i <= $this->baseSize; $i++) {
+            $matrixRows[] = $this->getFieldsFromBlockRow($i);
+        }
+        return $matrixRows;
+    }
+
+    public function getAsMatrixColumns(): array
+    {
+        $matrixCols = [];
+        for ($i = 1; $i <= $this->baseSize; $i++) {
+            $matrixCols[] = $this->getFieldsFromBlockColumn($i);
+        }
+        return $matrixCols;
     }
 }

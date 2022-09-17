@@ -14,6 +14,8 @@ $(document).ready(function () {
         $("input.field").filter(function() {
             return !($(this).is(".isFixed"));
         }).val("");
+
+        $("td").removeClass("invalidValue");
     });
 })
 
