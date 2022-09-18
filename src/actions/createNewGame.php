@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace src\actions;
 
@@ -8,7 +9,7 @@ spl_autoload_register(function ($class) {
 
 use src\models\Game;
 
-$baseSize = $_POST["baseSize"];
+$baseSize = (int)$_POST["baseSize"];
 
 $game = new Game();
 echo $game->initializeGame($baseSize);

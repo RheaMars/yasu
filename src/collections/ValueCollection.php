@@ -1,22 +1,38 @@
 <?php
+declare(strict_types=1);
+
 namespace src\collections;
 
-use ArrayObject;
-use InvalidArgumentException;
+use ArrayIterator;
 
-class ValueCollection extends ArrayObject
+class ValueCollection extends ArrayIterator
 {
-    public function offsetSet($index, $value): void
+    public function __construct(int ...$numbers)
     {
-        if (!is_int($value) && null !== $value) {
-            throw new InvalidArgumentException("Input must be null or of type int.");
-        }
+        parent::__construct($numbers);
+    }
 
-        parent::offsetSet($index, $value);
+    public function current() : ?int
+    {
+        return parent::current();
+    }
+
+    public function offsetGet($offset) : ?int
+    {
+        return parent::offsetGet($offset);
     }
 
     public function toArray(): array
     {
-        return iterator_to_array($this->getIterator());
+        return iterator_to_array($this);
+    }
+
+    public function sortByValue(): void
+    {
+        $this->uasort(
+            function(int $a, int $b) {
+                return $a <=> $b;
+            }
+        );
     }
 }

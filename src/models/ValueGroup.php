@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 
 namespace src\models;
 
 use src\collections\FieldCollection;
 use src\collections\ValueCollection;
 
-class ValueGroup
+abstract class ValueGroup
 {
     protected string $type;
 

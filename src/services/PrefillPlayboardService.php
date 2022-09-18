@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace src\services;
 
@@ -44,11 +45,8 @@ class PrefillPlayboardService
 
                         $field->setValue($value);
 
-                        /** @var $row Row */
                         $row = $playboard->getRows()[$field->getRowIndex()];
-                        /** @var $col Column */
                         $col = $playboard->getColumns()[$field->getColIndex()];
-                        /** @var $block Block */
                         $block = $playboard->getBlocks()[$field->getBlockIndex()];
 
                         if ($row->isValid() && $col->isValid() && $block->isValid()) {
@@ -104,11 +102,8 @@ class PrefillPlayboardService
                 foreach ($values as $value) {
                     $field->setValue($value);
 
-                    /** @var $row Row */
                     $row = $playboard->getRows()[$rowIndex];
-                    /** @var $col Column */
                     $col = $playboard->getColumns()[$colIndex];
-                    /** @var $block Block */
                     $block = $playboard->getBlocks()[$blockIndex];
 
                     if ($row->isValid() && $col->isValid() && $block->isValid()) {
@@ -149,11 +144,8 @@ class PrefillPlayboardService
 
                         $field->setValue($value);
 
-                        /** @var $row Row */
                         $row = $playboard->getRows()[$field->getRowIndex()];
-                        /** @var $col Column */
                         $col = $playboard->getColumns()[$field->getColIndex()];
-                        /** @var $block Block */
                         $block = $playboard->getBlocks()[$field->getBlockIndex()];
 
                         if ($row->isValid() && $col->isValid() && $block->isValid()) {
@@ -164,6 +156,7 @@ class PrefillPlayboardService
                     }
 
                     // if field could not be filled, the playboard is invalid - try again
+                    // TODO Fix: $field is outside of loop: Variable $field is probabyl undefined!
                     if (null === $field->getValue()) {
                         break 2;
                     }
@@ -182,15 +175,13 @@ class PrefillPlayboardService
     {
         foreach ($playboard->getBlocks() as $block) {
 
-            /** @var $block Block */
-
             $parentBlock = $this->getParentBlock($playboard, $block);
 
             // prefill fields of first block with randomly shuffled values
             if (null === $parentBlock) {
                 $values = range(1, pow($playboard->getBaseSize(), 2));
                 shuffle($values);
-                $valueUnits = $this->createUnitMatrices(new ValueCollection($values), $playboard->getBaseSize())["rowUnits"];
+                $valueUnits = $this->createUnitMatrices(new ValueCollection(...$values), $playboard->getBaseSize())["rowUnits"];
                 $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
@@ -212,10 +203,10 @@ class PrefillPlayboardService
             return null;
         }
         if (1 < $block->getPlayboardColIndex()) {
-            return $playboard->getBlocks()->getBlockByPlayboardIndices($block->getPlayboardRowIndex(), $block->getPlayboardColIndex() - 1);
+            return $playboard->getBlocks()[$block->getPlayboardRowIndex() . "-" . ($block->getPlayboardColIndex() - 1)];
         }
         if (1 < $block->getPlayboardRowIndex()) {
-            return $playboard->getBlocks()->getBlockByPlayboardIndices($block->getPlayboardRowIndex() - 1, $block->getPlayboardColIndex());
+            return $playboard->getBlocks()[($block->getPlayboardRowIndex() - 1) . "-" . $block->getPlayboardColIndex()];
         }
         return null;
     }
@@ -242,13 +233,14 @@ class PrefillPlayboardService
             }
         }
 
+        //TODO Consider to refactor to custom Matrix type
         return ["rowUnits" => $rowUnits, "colUnits" => $colUnits];
     }
 
     private function getPermutedUnits(Playboard $playboard, array $parentPermutationUnits): array
     {
         $permutedUnits = $this->getNextCyclicPermutation($parentPermutationUnits);
-        $fields = FieldCollection::merge($permutedUnits);
+        $fields = FieldCollection::mergeAll($permutedUnits);
 
         return $this->createUnitMatrices($fields->getValues(), $playboard->getBaseSize());
     }
