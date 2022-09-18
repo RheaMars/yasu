@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace src\models;
 
 use Exception;
-use src\collections\FieldCollection;
+use src\iterators\FieldIterator;
 
 class Block extends ValueGroup
 {
@@ -31,9 +31,9 @@ class Block extends ValueGroup
         return $this->playboardColIndex;
     }
 
-    public function getFieldsFromBlockRow(int $blockRowIndex): FieldCollection
+    public function getFieldsFromBlockRow(int $blockRowIndex): FieldIterator
     {
-        $fields = new FieldCollection();
+        $fields = new FieldIterator();
         foreach ($this->getFields() as $field){
             if ($blockRowIndex === $field->getBlockRowIndex()){
                 $fields[] = $field;
@@ -42,9 +42,9 @@ class Block extends ValueGroup
         return $fields;
     }
 
-    public function getFieldsFromBlockColumn(int $blockColIndex): FieldCollection
+    public function getFieldsFromBlockColumn(int $blockColIndex): FieldIterator
     {
-        $fields = new FieldCollection();
+        $fields = new FieldIterator();
         foreach ($this->getFields() as $field){
             if ($blockColIndex === $field->getBlockColIndex()){
                 $fields[] = $field;

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace src\models;
 
-use src\collections\FieldCollection;
-use src\collections\ValueCollection;
+use src\iterators\FieldIterator;
+use src\iterators\ValueIterator;
 
 abstract class ValueGroup
 {
@@ -14,12 +14,12 @@ abstract class ValueGroup
 
     protected int $baseSize;
 
-    private FieldCollection $fields;
+    private FieldIterator $fields;
 
     public function __construct(int|string $index, int $baseSize)
     {
         $this->index = $index;
-        $this->fields = new FieldCollection();
+        $this->fields = new FieldIterator();
         $this->baseSize = $baseSize;
     }
 
@@ -28,7 +28,7 @@ abstract class ValueGroup
         $this->fields[] = $field;
     }
 
-    public function getFields(): FieldCollection
+    public function getFields(): FieldIterator
     {
         return $this->fields;
     }
@@ -51,13 +51,13 @@ abstract class ValueGroup
         return false;
     }
 
-    public function getInvalidFields(): FieldCollection
+    public function getInvalidFields(): FieldIterator
     {
         $values = $this->getValues()->toArray();
 
         $duplicateValues = array_unique(array_values(array_diff_assoc($values, array_unique($values))));
 
-        $invalidFields = new FieldCollection();
+        $invalidFields = new FieldIterator();
 
         foreach ($this->fields as $field) {
             if (null !== $field->getValue()
@@ -70,7 +70,7 @@ abstract class ValueGroup
         return $invalidFields;
     }
 
-    private function getValues(): ValueCollection
+    private function getValues(): ValueIterator
     {
         return $this->fields->getValues();
     }

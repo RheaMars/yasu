@@ -1,11 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace src\collections;
+namespace src\iterators;
 
-use ArrayIterator;
-
-class ValueCollection extends ArrayIterator
+class ValueIterator extends Iterator
 {
     public function __construct(int ...$numbers)
     {
@@ -20,11 +18,6 @@ class ValueCollection extends ArrayIterator
     public function offsetGet($offset) : ?int
     {
         return parent::offsetGet($offset);
-    }
-
-    public function toArray(): array
-    {
-        return iterator_to_array($this);
     }
 
     public function sortByValue(): void

@@ -4,23 +4,23 @@ declare(strict_types=1);
 namespace src\models;
 
 use Exception;
-use src\collections\BlockCollection;
-use src\collections\ColumnCollection;
-use src\collections\FieldCollection;
-use src\collections\RowCollection;
+use src\iterators\BlockIterator;
+use src\iterators\ColumnIterator;
+use src\iterators\FieldIterator;
+use src\iterators\RowIterator;
 use src\services\PrefillPlayboardService;
 
 class Playboard
 {
     private int $baseSize;
 
-    private FieldCollection $fields;
+    private FieldIterator $fields;
 
-    private RowCollection $rows;
+    private RowIterator $rows;
 
-    private ColumnCollection $columns;
+    private ColumnIterator $columns;
 
-    private BlockCollection $blocks;
+    private BlockIterator $blocks;
 
     public function __construct(int $baseSize)
     {
@@ -101,7 +101,7 @@ class Playboard
         return $html;
     }
 
-    public function getFields(): FieldCollection
+    public function getFields(): FieldIterator
     {
         return $this->fields;
     }
@@ -111,17 +111,17 @@ class Playboard
         return $this->baseSize;
     }
 
-    public function getRows(): RowCollection
+    public function getRows(): RowIterator
     {
         return $this->rows;
     }
 
-    public function getColumns(): ColumnCollection
+    public function getColumns(): ColumnIterator
     {
         return $this->columns;
     }
 
-    public function getBlocks(): BlockCollection
+    public function getBlocks(): BlockIterator
     {
         return $this->blocks;
     }
@@ -134,18 +134,18 @@ class Playboard
         return false;
     }
 
-    public function getInvalidFields(): FieldCollection
+    public function getInvalidFields(): FieldIterator
     {
         $invalidFields = [];
-        $valueGroupCollections = [$this->rows, $this->columns, $this->blocks];
-        foreach ($valueGroupCollections as $groupCollection) {
-            foreach ($groupCollection as $group) {
+        $valueGroupIterators = [$this->rows, $this->columns, $this->blocks];
+        foreach ($valueGroupIterators as $groupIterator) {
+            foreach ($groupIterator as $group) {
                 $invalidFields[] = $group->getInvalidFields()->toArray();
             }
         }
         $invalidFields = array_unique(array_merge(...$invalidFields), SORT_REGULAR);
 
-        return new FieldCollection(...$invalidFields);
+        return new FieldIterator(...$invalidFields);
     }
 
     public function isComplete(): bool
@@ -205,9 +205,9 @@ class Playboard
         $this->blocks = $this->createEmptyBlocks($fields);
     }
 
-    private function createEmptyFields($baseSize): FieldCollection
+    private function createEmptyFields($baseSize): FieldIterator
     {
-        $fields = new FieldCollection();
+        $fields = new FieldIterator();
         for ($row = 1; $row <= pow($baseSize, 2); $row++) {
             for ($col = 1; $col <= pow($baseSize, 2); $col++) {
                 $fields[$row . "-" . $col] = new Field($baseSize, $row, $col, null);
@@ -216,9 +216,9 @@ class Playboard
         return $fields;
     }
 
-    private function createEmptyRows(FieldCollection $fields): RowCollection
+    private function createEmptyRows(FieldIterator $fields): RowIterator
     {
-        $rows = new RowCollection();
+        $rows = new RowIterator();
         foreach ($fields as $field) {
             $rowIndex = $field->getRowIndex();
 
@@ -232,9 +232,9 @@ class Playboard
         return $rows;
     }
 
-    private function createEmptyColumns(FieldCollection $fields): ColumnCollection
+    private function createEmptyColumns(FieldIterator $fields): ColumnIterator
     {
-        $cols = new ColumnCollection();
+        $cols = new ColumnIterator();
         foreach ($fields as $field) {
             $colIndex = $field->getColIndex();
 
@@ -248,9 +248,9 @@ class Playboard
         return $cols;
     }
 
-    private function createEmptyBlocks(FieldCollection $fields): BlockCollection
+    private function createEmptyBlocks(FieldIterator $fields): BlockIterator
     {
-        $blocks = new BlockCollection();
+        $blocks = new BlockIterator();
         foreach ($fields as $field) {
             $playboardRowIndex = $field->getPlayboardRowIndex();
             $playboardColIndex = $field->getPlayboardColIndex();

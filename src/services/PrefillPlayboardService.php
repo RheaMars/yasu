@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace src\services;
 
-use src\collections\FieldCollection;
-use src\collections\ValueCollection;
+use src\iterators\FieldIterator;
+use src\iterators\ValueIterator;
 use src\models\Block;
-use src\models\Column;
 use src\models\Playboard;
-use src\models\Row;
 
 class PrefillPlayboardService
 {
@@ -181,7 +179,7 @@ class PrefillPlayboardService
             if (null === $parentBlock) {
                 $values = range(1, pow($playboard->getBaseSize(), 2));
                 shuffle($values);
-                $valueUnits = $this->createUnitMatrices(new ValueCollection(...$values), $playboard->getBaseSize())["rowUnits"];
+                $valueUnits = $this->createUnitMatrices(new ValueIterator(...$values), $playboard->getBaseSize())["rowUnits"];
                 $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
@@ -222,7 +220,7 @@ class PrefillPlayboardService
      * Input: [1, 2, 3, 4, 5, 6, 7, 8, 9]
      * Output: ["rowUnits" => [[1, 2, 3], [4, 5, 6], [7, 8, 9]], "colUnits" => [[1, 4, 7], [2, 5, 8], [3, 6, 9]]]
      */
-    private function createUnitMatrices(ValueCollection $values, int $baseSize): array
+    private function createUnitMatrices(ValueIterator $values, int $baseSize): array
     {
         $rowUnits = array_chunk($values->toArray(), $baseSize);
         $colUnits = [];
@@ -240,7 +238,7 @@ class PrefillPlayboardService
     private function getPermutedUnits(Playboard $playboard, array $parentPermutationUnits): array
     {
         $permutedUnits = $this->getNextCyclicPermutation($parentPermutationUnits);
-        $fields = FieldCollection::mergeAll($permutedUnits);
+        $fields = FieldIterator::mergeAll($permutedUnits);
 
         return $this->createUnitMatrices($fields->getValues(), $playboard->getBaseSize());
     }
