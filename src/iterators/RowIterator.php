@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace src\collections;
+namespace src\iterators;
 
-use ArrayIterator;
 use src\models\Row;
 
-class RowCollection extends ArrayIterator
+class RowIterator extends Iterator
 {
     public function __construct(Row ...$rows)
     {
@@ -23,14 +22,9 @@ class RowCollection extends ArrayIterator
         return parent::offsetGet($offset);
     }
 
-    public function toArray(): array
+    public function merge(RowIterator $other): RowIterator
     {
-        return iterator_to_array($this);
-    }
-
-    public function merge(RowCollection $other): RowCollection
-    {
-        return new RowCollection(
+        return new RowIterator(
             ...array_merge(
                 iterator_to_array($this),
                 iterator_to_array($other)

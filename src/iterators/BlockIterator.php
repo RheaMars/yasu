@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace src\collections;
+namespace src\iterators;
 
-use ArrayIterator;
 use src\models\Block;
 
-class BlockCollection extends ArrayIterator
+class BlockIterator extends Iterator
 {
     public function __construct(Block ...$blocks)
     {
@@ -23,14 +22,9 @@ class BlockCollection extends ArrayIterator
         return parent::offsetGet($offset);
     }
 
-    public function toArray(): array
+    public function merge(BlockIterator $other): BlockIterator
     {
-        return iterator_to_array($this);
-    }
-
-    public function merge(BlockCollection $other): BlockCollection
-    {
-        return new BlockCollection(
+        return new BlockIterator(
             ...array_merge(
                 iterator_to_array($this),
                 iterator_to_array($other)

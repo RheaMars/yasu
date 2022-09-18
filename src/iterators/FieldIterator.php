@@ -1,14 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace src\collections;
+namespace src\iterators;
 
-use ArrayIterator;
 use src\models\Field;
 
-class FieldCollection extends ArrayIterator
+class FieldIterator extends Iterator
 {
-
     public function __construct(Field ...$fields)
     {
         parent::__construct($fields);
@@ -24,14 +22,9 @@ class FieldCollection extends ArrayIterator
         return parent::offsetGet($offset);
     }
 
-    public function toArray(): array
+    public function merge(FieldIterator $other): FieldIterator
     {
-        return iterator_to_array($this);
-    }
-
-    public function merge(FieldCollection $other): FieldCollection
-    {
-        return new FieldCollection(
+        return new FieldIterator(
             ...array_merge(
                 iterator_to_array($this),
                 iterator_to_array($other)
@@ -39,9 +32,9 @@ class FieldCollection extends ArrayIterator
         );
     }
 
-    public function getValues(): ValueCollection
+    public function getValues(): ValueIterator
     {
-        $values = new ValueCollection();
+        $values = new ValueIterator();
         foreach ($this->getArrayCopy() as $field) {
             $values[] = $field->getValue();
         }
@@ -50,7 +43,8 @@ class FieldCollection extends ArrayIterator
 
     public function setNonEmptyFieldsToFixed(): void
     {
-        foreach ($this->getArrayCopy() as $field) {
+        $fields = new FieldIterator(...$this->getArrayCopy());
+        foreach ($fields as $field) {
             if (null !== $field->getValue()) {
                 $field->setToFixed();
             }
@@ -59,21 +53,24 @@ class FieldCollection extends ArrayIterator
 
     public function emptyValues(): void
     {
-        foreach ($this->getArrayCopy() as $field) {
+        $fields = new FieldIterator(...$this->getArrayCopy());
+        foreach ($fields as $field) {
             $field->setValue(null);
         }
     }
 
     public function prefillRandomly(int $size): void
     {
-        foreach ($this->getArrayCopy() as $field) {
+        $fields = new FieldIterator(...$this->getArrayCopy());
+        foreach ($fields as $field) {
             $field->setValue(rand(1, pow($size, 2)));
         }
     }
 
     public function allValuesSet(): bool
     {
-        foreach ($this->getArrayCopy() as $field) {
+        $fields = new FieldIterator(...$this->getArrayCopy());
+        foreach ($fields as $field) {
             if (null === $field->getValue()) {
                 return false;
             }
@@ -81,14 +78,14 @@ class FieldCollection extends ArrayIterator
         return true;
     }
 
-    public static function mergeAll(array $fieldCollections): FieldCollection
+    public static function mergeAll(array $fieldIterators): FieldIterator
     {
         $flattened = [];
-        foreach ($fieldCollections as $fields) {
+        foreach ($fieldIterators as $fields) {
             foreach ($fields as $field) {
                 $flattened[] = $field;
             }
         }
-        return new FieldCollection(...$flattened);
+        return new FieldIterator(...$flattened);
     }
 }
