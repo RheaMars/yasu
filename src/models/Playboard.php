@@ -8,6 +8,8 @@ use src\iterators\BlockIterator;
 use src\iterators\ColumnIterator;
 use src\iterators\FieldIterator;
 use src\iterators\RowIterator;
+use src\iterators\PlayboardRowIterator;
+use src\iterators\PlayboardColumnIterator;
 use src\services\PrefillPlayboardService;
 
 class Playboard
@@ -21,6 +23,10 @@ class Playboard
     private ColumnIterator $columns;
 
     private BlockIterator $blocks;
+
+    private PlayboardRowIterator $playboardRows;
+
+    private PlayboardColumnIterator $playboardColumns;
 
     public function __construct(int $baseSize)
     {
@@ -203,6 +209,8 @@ class Playboard
         $this->rows = $this->createEmptyRows($fields);
         $this->columns = $this->createEmptyColumns($fields);
         $this->blocks = $this->createEmptyBlocks($fields);
+        $this->playboardRows = $this->createEmptyPlayboardRows($fields);
+        $this->playboardColumns = $this->createEmptyPlayboardColumns($fields);
     }
 
     private function createEmptyFields($baseSize): FieldIterator
@@ -264,5 +272,37 @@ class Playboard
             $block->addField($field);
         }
         return $blocks;
+    }
+
+    private function createEmptyPlayboardRows(FieldIterator $fields): PlayboardRowIterator
+    {
+        $playboardRows = new PlayboardRowIterator();
+        foreach ($fields as $field) {
+            $playboardRowIndex = $field->getPlayboardRowIndex();
+        
+            if (!isset($playboardRows[$playboardRowIndex])) {
+                $playboardRow = new PlayboardRow($playboardRowIndex);
+                $playboardRows[$playboardRowIndex] = $playboardRow;
+            }
+            $playboardRow = $playboardRows[$playboardRowIndex];
+            $playboardRow->addField($field);
+        }
+        return $playboardRows;
+    }
+
+    private function createEmptyPlayboardColumns(FieldIterator $fields): PlayboardColumnIterator
+    {
+        $playboardColumns = new PlayboardColumnIterator();
+        foreach ($fields as $field) {
+            $playboardColumnIndex = $field->getPlayboardColIndex();
+        
+            if (!isset($playboardColumn[$playboardColumnIndex])) {
+                $playboardColumn = new PlayboardColumn($playboardColumnIndex);
+                $playboardColumn[$playboardColumnIndex] = $playboardColumn;
+            }
+            $playboardColumn = $playboardColumns[$playboardColumnIndex];
+            $playboardColumn->addField($field);
+        }
+        return $playboardColumns;
     }
 }
