@@ -3,34 +3,47 @@ declare(strict_types=1);
 
 namespace src\collections;
 
-use ArrayObject;
-use Exception;
-use InvalidArgumentException;
+use ArrayIterator;
 use src\models\Block;
 
-class BlockCollection extends ArrayObject
+class BlockCollection extends ArrayIterator
 {
-    public function offsetSet($index, $block): void
+    public function __construct(Block ...$blocks)
     {
-        if (!($block instanceof Block)) {
-            throw new InvalidArgumentException("Input must be of type Block");
-        }
+        parent::__construct($blocks);
+    }
 
-        parent::offsetSet($index, $block);
+    public function current(): Block
+    {
+        return parent::current();
+    }
+
+    public function offsetGet($offset): Block
+    {
+        return parent::offsetGet($offset);
     }
 
     public function toArray(): array
     {
-        return iterator_to_array($this->getIterator());
+        return iterator_to_array($this);
     }
 
-    public function getBlockByPlayboardIndices(int $playboardRowIndex, int $playboardColIndex): Block
+    public function merge(BlockCollection $other): BlockCollection
     {
-        foreach ($this->getIterator() as $block) {
-            if ($playboardRowIndex === $block->getPlayboardRowIndex() && $playboardColIndex === $block->getPlayboardColIndex()) {
-                return $block;
+        return new BlockCollection(
+            ...array_merge(
+                iterator_to_array($this),
+                iterator_to_array($other)
+            )
+        );
+    }
+
+    public function sortByIndex(): void
+    {
+        $this->uasort(
+            function(Block $a, Block $b) {
+                return $a->getIndex() <=> $b->getIndex();
             }
-        }
-        throw new Exception("Could not find block with indices (" . $playboardRowIndex . "," . $playboardColIndex . ") in block collection");
+        );
     }
 }

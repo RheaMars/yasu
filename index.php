@@ -29,7 +29,7 @@ spl_autoload_register(function ($class) {
     </div>
 
     <div class="mt-10">
-        <img style="display:none" id="loadingGif" src="img/loading.gif"/>
+        <img style="display:none" id="loadingGif" src="img/loading.gif" alt="loading"/>
     </div>
 
     <div class="mt-10" id="playboardWrapper"></div>

@@ -35,7 +35,7 @@ class Playboard
     public function setFieldsFromData(array $data): void
     {
         foreach ($data as $fieldData) {
-            $field = $this->fields->getFieldByIndices((int)$fieldData["row"], (int)$fieldData["col"]);
+            $field = $this->fields[$fieldData["row"]."-".$fieldData["col"]];
             if ("" === $fieldData["val"]) {
                 $field->setValue(null);
             } else {
@@ -145,7 +145,7 @@ class Playboard
         }
         $invalidFields = array_unique(array_merge(...$invalidFields), SORT_REGULAR);
 
-        return new FieldCollection($invalidFields);
+        return new FieldCollection(...$invalidFields);
     }
 
     public function isComplete(): bool
