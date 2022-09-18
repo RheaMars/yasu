@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace src\models;
 
@@ -34,7 +35,7 @@ class Playboard
     public function setFieldsFromData(array $data): void
     {
         foreach ($data as $fieldData) {
-            $field = $this->fields->getFieldByIndices($fieldData["row"], $fieldData["col"]);
+            $field = $this->fields->getFieldByIndices((int)$fieldData["row"], (int)$fieldData["col"]);
             if ("" === $fieldData["val"]) {
                 $field->setValue(null);
             } else {

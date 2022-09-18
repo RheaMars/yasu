@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace src\models;
 
 class Row extends ValueGroup

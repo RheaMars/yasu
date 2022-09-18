@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace src\actions;
 
@@ -10,7 +11,7 @@ spl_autoload_register(function ($class) {
 
 $fieldData = $_POST["fieldData"];
 
-$baseSize = pow(sizeof($fieldData), 1/4);
+$baseSize = (int)pow(sizeof($fieldData), 1/4);
 $playboard = new Playboard($baseSize);
 $playboard->setFieldsFromData($fieldData);
 
