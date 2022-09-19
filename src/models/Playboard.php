@@ -268,13 +268,6 @@ class Playboard
         $service->permuteColumnsWithinPlayboardColumns();
     }
 
-    public function randomize(): void
-    {
-        $service = new RandomizePlayboardService($this);
-        $service->permuteRowsWithinPlayboardRows();
-        $service->permuteColumnsWithinPlayboardColumns();
-    }
-
     private function createEmptyPlayboard()
     {
         $fields = $this->createEmptyFields($this->baseSize);
