@@ -9,6 +9,8 @@ class Game
     {
         $playboard = new Playboard($baseSize);
         $playboard->prefillFields();
+
+        // echo $playboard->generatePlayboardHtml();
         $playboard->randomize();
         if ($playboard->isValid() && $playboard->isComplete()) {
             $playboard->emptyFieldsByPercentage($level);

@@ -73,7 +73,7 @@ class Field
         return $this->playboardRowIndex;
     }
 
-    public function getPlayboardColIndex(): int
+    public function getPlayboardColumnIndex(): int
     {
         return $this->playboardColIndex;
     }

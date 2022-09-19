@@ -28,5 +28,4 @@ class Row extends ValueGroup
             $thisFields[$i]->setValue($otherValues[$i]);
         }
     }
-
 }
