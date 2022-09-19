@@ -9,7 +9,7 @@ spl_autoload_register(function ($class) {
     include "../../" . str_replace("\\", "/", $class) . '.php';
 });
 
-$fieldData = $_POST["fieldData"];
+$fieldData = json_decode($_POST["fieldData"], true);
 
 $baseSize = (int)pow(sizeof($fieldData), 1/4);
 $playboard = new Playboard($baseSize);
