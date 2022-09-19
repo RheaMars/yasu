@@ -53,6 +53,11 @@ class Field
             "IsValueFixed: " . $this->isValueFixed;
     }
 
+    public function getIndex(): string
+    {
+        return $this->rowIndex . "-" . $this->colIndex;
+    }
+
     public function getRowIndex(): int
     {
         return $this->rowIndex;
