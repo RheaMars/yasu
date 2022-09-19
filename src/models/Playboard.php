@@ -186,13 +186,12 @@ class Playboard
 
     public function prefillFields(): void
     {
-        $maxRounds = 100 * pow($this->baseSize, 2);
-        $service = new PrefillPlayboardService();
-        //$service->prefillRandomly($this);
-        //$service->prefillByBlocksDiagonally($this, $maxRounds);
-        //$service->prefillByRows($this, $maxRounds);
-        //$service->prefillByPlayboardRows($this, $maxRounds);
-        $service->prefillByPermutations($this);
+        $service = new PrefillPlayboardService($this);
+        //$service->prefillRandomly();
+        //$service->prefillByBlocksDiagonally();
+        //$service->prefillByRows();
+        //$service->prefillByPlayboardRows();
+        $service->prefillByPermutations();
     }
 
     private function createEmptyPlayboard()
