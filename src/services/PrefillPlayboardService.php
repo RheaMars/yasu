@@ -16,7 +16,7 @@ class PrefillPlayboardService
 
     private Playboard $playboard;
 
-    public function __construct(Playboard $playboard, ?int $maxRounds = null)
+    public function __construct(Playboard $playboard, int $maxRounds = 1000)
     {
         $this->playboard = $playboard;
         $this->maxRounds = $maxRounds ?? 100 * pow($this->playboard->getBaseSize(), 2);
@@ -34,17 +34,21 @@ class PrefillPlayboardService
 
         $counter = 0;
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
+
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
             shuffle($this->legalValues);
 
             foreach ($this->legalValues as $legalValue) {
+
                 foreach ($sortedBlockIndices as $blockIndex) {
 
                     $block = $this->playboard->getBlocks()[$blockIndex["row"] . "-" . $blockIndex["col"]];
 
                     $blockFields = $block->getFields()->toArray();
                     shuffle($blockFields);
+
+                    $legalValueSetInBlock = false;
 
                     foreach ($blockFields as $field) {
 
@@ -59,15 +63,14 @@ class PrefillPlayboardService
                         $block = $this->playboard->getBlocks()[$field->getBlockIndex()];
 
                         if ($row->isValid() && $col->isValid() && $block->isValid()) {
+                            $legalValueSetInBlock = true;
                             break;
                         }
                         $field->setValue(null);
                     }
 
-                    //TODO Fix $field might be undefined
-                    // if field could not be filled, the playboard is invalid - try again
-                    if (null === $field->getValue()) {
-                        break 2;
+                    if (!$legalValueSetInBlock) {
+                        break 2; // start next round
                     }
                 }
             }
@@ -106,6 +109,9 @@ class PrefillPlayboardService
                 $rowIndex = $field->getRowIndex();
                 $colIndex = $field->getColIndex();
                 $blockIndex = $field->getBlockIndex();
+
+                $fieldValueIsSet = false;
+
                 foreach ($this->legalValues as $legalValue) {
                     $field->setValue($legalValue);
 
@@ -114,15 +120,14 @@ class PrefillPlayboardService
                     $block = $this->playboard->getBlocks()[$blockIndex];
 
                     if ($row->isValid() && $col->isValid() && $block->isValid()) {
+                        $fieldValueIsSet = true;
                         break;
                     }
                     $field->setValue(null);
                 }
 
-                //TODO Fix
-                // if field could not be filled, the playboard is invalid - try again
-                if (null === $field->getValue()) {
-                    break;
+                if (!$fieldValueIsSet) {
+                    break; // start next round
                 }
             }
         }
@@ -137,10 +142,13 @@ class PrefillPlayboardService
             shuffle($this->legalValues);
 
             foreach ($this->legalValues as $legalValue) {
+
                 foreach ($this->playboard->getBlocks() as $block) {
 
                     $blockFields = $block->getFields()->toArray();
                     shuffle($blockFields);
+
+                    $legalValueSetInBlock = false;
 
                     foreach ($blockFields as $field) {
 
@@ -155,16 +163,15 @@ class PrefillPlayboardService
                         $block = $this->playboard->getBlocks()[$field->getBlockIndex()];
 
                         if ($row->isValid() && $col->isValid() && $block->isValid()) {
+                            $legalValueSetInBlock = true;
                             break;
                         }
 
                         $field->setValue(null);
                     }
 
-                    // if field could not be filled, the playboard is invalid - try again
-                    // TODO Fix: $field is outside of loop: Variable $field is probabyl undefined!
-                    if (null === $field->getValue()) {
-                        break 2;
+                    if (!$legalValueSetInBlock) {
+                        break 2; // start next round
                     }
                 }
             }
@@ -175,7 +182,7 @@ class PrefillPlayboardService
      * This prefills the fields of the first block in a shuffled manner
      * and then fills the next blocks based on a "parent block" (left or upper),
      * by permuting the block rows or columns of the latter.
-     * It is a non-brute-force method to prefill fields.
+     * It is a non-brute-force method to prefill fields in one round.
      */
     public function prefillByPermutations(): void
     {
