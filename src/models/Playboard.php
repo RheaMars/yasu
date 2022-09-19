@@ -49,7 +49,7 @@ class Playboard
                 $field->setValue((int)$fieldData["val"]);
             }
 
-            if ("true" === $fieldData["isFixed"]) {
+            if (true === $fieldData["isFixed"]) {
                 $field->setToFixed();
             }
         }
@@ -253,13 +253,19 @@ class Playboard
 
     public function prefillFields(): void
     {
-        $maxRounds = 100 * pow($this->baseSize, 2);
-        $service = new PrefillPlayboardService();
-        //$service->prefillRandomly($this);
-        //$service->prefillByBlocksDiagonally($this, $maxRounds);
-        //$service->prefillByRows($this, $maxRounds);
-        //$service->prefillByPlayboardRows($this, $maxRounds);
-        $service->prefillByPermutations($this);
+        $service = new PrefillPlayboardService($this);
+        //$service->prefillRandomly();
+        //$service->prefillByBlocksDiagonally();
+        //$service->prefillByRows();
+        //$service->prefillByPlayboardRows();
+        $service->prefillByPermutations();
+    }
+
+    public function randomize(): void
+    {
+        $service = new RandomizePlayboardService($this);
+        $service->permuteRowsWithinPlayboardRows();
+        $service->permuteColumnsWithinPlayboardColumns();
     }
 
     public function randomize(): void

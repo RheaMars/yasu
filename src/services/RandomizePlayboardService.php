@@ -10,11 +10,14 @@ use src\models\PlayboardColumn;
 
 class RandomizePlayboardService
 {
+    private array $legalValues;
+
     private Playboard $playboard;
 
     public function __construct(Playboard $playboard)
     {
         $this->playboard = $playboard;
+        $this->legalValues = range(1, pow($this->playboard->getBaseSize(), 2));
     }
 
     public function permuteRowsWithinPlayboardRows(): void
@@ -64,6 +67,21 @@ class RandomizePlayboardService
         foreach ($columnIndices as $columnIndex){
             $permutationColumn = array_shift($permutationColumns);
             $this->playboard->getColumnByIndex($columnIndex)->replaceValuesbyColumn($permutationColumn);
+        }
+    }
+
+    public function permuteValues(): void
+    {
+        $shuffledValues = $this->legalValues;
+        shuffle($shuffledValues);
+//        echo "Shuffled values:<br>";
+//        var_dump($shuffledValues);
+
+        foreach ($this->playboard->getFields() as $field) {
+            $value = $field->getValue();
+            $shuffleValue = $shuffledValues[$value - 1];
+            $field->setValue($shuffleValue);
+            //echo "Set value of field " . $field->getIndex() . " from " . $value . " to " . $shuffleValue . "<br>";
         }
     }
 

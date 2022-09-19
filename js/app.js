@@ -73,7 +73,7 @@ function validateGame() {
         url: "src/actions/validateGame.php",
         method: "POST",
         data: {
-            fieldData: fieldData
+            fieldData: JSON.stringify(fieldData)
         },
         beforeSend: function() {
             $("td").removeClass("invalidValue");
