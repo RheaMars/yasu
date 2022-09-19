@@ -40,4 +40,14 @@ class RowIterator extends Iterator
             }
         );
     }
+
+    public function getRowIndices(): array
+    {
+        $rowIndices = [];
+        $rows = new RowIterator(...$this->getArrayCopy());
+        foreach ($rows as $row){
+            $rowIndices[] = $row->getIndex();
+        }
+        return $rowIndices;
+    }
 }

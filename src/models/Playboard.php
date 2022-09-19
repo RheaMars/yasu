@@ -11,6 +11,7 @@ use src\iterators\RowIterator;
 use src\iterators\PlayboardRowIterator;
 use src\iterators\PlayboardColumnIterator;
 use src\services\PrefillPlayboardService;
+use src\services\RandomizePlayboardService;
 
 class Playboard
 {
@@ -122,6 +123,30 @@ class Playboard
         return $this->rows;
     }
 
+    public function getRowsByPlayboardRowIndex(int $playboardRowIndex): RowIterator
+    {
+        $rows = new RowIterator();
+        foreach ($this->fields as $field){
+            if ($field->getPlayboardRowIndex() === $playboardRowIndex
+                && !isset($rows[$field->getRowIndex()])){
+                $rows[$field->getRowIndex()] = $this->rows[$field->getRowIndex()];
+            }
+        }
+        return $rows;
+    }
+
+    // TODO: consider moving to RowIterator
+    public function getRowByIndex(int $index): Row
+    {
+        $rows = new RowIterator(...$this->rows);
+        foreach ($rows as $row){
+            if ($index === $row->getIndex()){
+                return $row;
+            }
+        }
+        throw new Exception("No row with index " . $index . " in playboard row with playboard row index " . $this->playboardRowIndex);
+    }
+
     public function getColumns(): ColumnIterator
     {
         return $this->columns;
@@ -130,6 +155,16 @@ class Playboard
     public function getBlocks(): BlockIterator
     {
         return $this->blocks;
+    }
+
+    public function getPlayboardRows(): PlayboardRowIterator
+    {
+        return $this->playboardRows;
+    }
+
+    public function getPlayboardColumns(): PlayboardColumnIterator
+    {
+        return $this->playboardColumns;
     }
 
     public function isValid(): bool
@@ -199,6 +234,12 @@ class Playboard
         //$service->prefillByRows($this, $maxRounds);
         //$service->prefillByPlayboardRows($this, $maxRounds);
         $service->prefillByPermutations($this);
+    }
+
+    public function randomize(): void
+    {
+        $service = new RandomizePlayboardService();
+        $service->permuteRowsWithinPlayboardRows($this);
     }
 
     private function createEmptyPlayboard()
@@ -296,9 +337,9 @@ class Playboard
         foreach ($fields as $field) {
             $playboardColumnIndex = $field->getPlayboardColIndex();
         
-            if (!isset($playboardColumn[$playboardColumnIndex])) {
+            if (!isset($playboardColumns[$playboardColumnIndex])) {
                 $playboardColumn = new PlayboardColumn($playboardColumnIndex);
-                $playboardColumn[$playboardColumnIndex] = $playboardColumn;
+                $playboardColumns[$playboardColumnIndex] = $playboardColumn;
             }
             $playboardColumn = $playboardColumns[$playboardColumnIndex];
             $playboardColumn->addField($field);
