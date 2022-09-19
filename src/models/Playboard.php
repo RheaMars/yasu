@@ -237,8 +237,8 @@ class Playboard
 
     public function randomize(): void
     {
-        $service = new RandomizePlayboardService();
-        $service->permuteRowsWithinPlayboardRows($this);
+        $service = new RandomizePlayboardService($this);
+        $service->permuteRowsWithinPlayboardRows();
     }
 
     private function createEmptyPlayboard()

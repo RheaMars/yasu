@@ -8,17 +8,24 @@ use src\models\PlayboardRow;
 
 class RandomizePlayboardService
 {
-    public function permuteRowsWithinPlayboardRows(Playboard $playboard): void
+    private Playboard $playboard;
+
+    public function __construct(Playboard $playboard)
     {
-        $playboardRows = $playboard->getPlayboardRows();
+        $this->playboard = $playboard;
+    }
+
+    public function permuteRowsWithinPlayboardRows(): void
+    {
+        $playboardRows = $this->playboard->getPlayboardRows();
         foreach ($playboardRows as $playboardRow){
-            $this->permuteRowsWithinPlayboardRow($playboard, $playboardRow);
+            $this->permuteRowsWithinPlayboardRow($playboardRow);
         }
     }
 
-    private function permuteRowsWithinPlayboardRow(Playboard $playboard, PlayboardRow $playboardRow): void
+    private function permuteRowsWithinPlayboardRow(PlayboardRow $playboardRow): void
     {
-        $rows = $playboard->getRowsByPlayboardRowIndex($playboardRow->getPlayboardRowIndex());
+        $rows = $this->playboard->getRowsByPlayboardRowIndex($playboardRow->getPlayboardRowIndex());
         $rowIndices = $rows->getRowIndices();
         $permutationRows = [];
         foreach ($rows as $row){
@@ -29,7 +36,26 @@ class RandomizePlayboardService
 
         foreach ($rowIndices as $rowIndex){
             $permutationRow = array_shift($permutationRows);
-            $playboard->getRowByIndex($rowIndex)->replaceValuesbyRow($permutationRow);
+            $this->playboard->getRowByIndex($rowIndex)->replaceValuesbyRow($permutationRow);
         }
     }
+
+    // public function permutePlayboardRows(PlayboardRow $playboardRow): void
+    // {
+    //     ...
+    // }
+    // public function permuteColumnsWithinPlayboardColumn(PlayboardColumn $playboardCol): void
+    // {
+    //     ...
+    // }
+
+    // public function permutePlayboardColumns(PlayboardRow $playboardRow): void
+    // {
+    //     ...
+    // }
+
+    // public function rotatePlayboard(): void
+    // {
+    //     ...
+    // }
 }
