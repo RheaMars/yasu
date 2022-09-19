@@ -17,7 +17,6 @@ class PlayboardRow
         $this->fields = new FieldIterator();
     }
 
-
     public function getPlayboardRowIndex(): int
     {
         return $this->playboardRowIndex;
