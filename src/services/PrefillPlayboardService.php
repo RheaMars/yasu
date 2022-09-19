@@ -37,9 +37,10 @@ class PrefillPlayboardService
 
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
-            foreach ($this->legalValues as $legalValue) {
+            foreach ($shuffledValues as $value) {
 
                 foreach ($sortedBlockIndices as $blockIndex) {
 
@@ -56,7 +57,7 @@ class PrefillPlayboardService
                             continue;
                         }
 
-                        $field->setValue($legalValue);
+                        $field->setValue($value);
 
                         $row = $this->playboard->getRows()[$field->getRowIndex()];
                         $col = $this->playboard->getColumns()[$field->getColIndex()];
@@ -103,7 +104,8 @@ class PrefillPlayboardService
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
             foreach ($this->playboard->getFields() as $field) {
                 $rowIndex = $field->getRowIndex();
@@ -112,8 +114,8 @@ class PrefillPlayboardService
 
                 $fieldValueIsSet = false;
 
-                foreach ($this->legalValues as $legalValue) {
-                    $field->setValue($legalValue);
+                foreach ($shuffledValues as $value) {
+                    $field->setValue($value);
 
                     $row = $this->playboard->getRows()[$rowIndex];
                     $col = $this->playboard->getColumns()[$colIndex];
@@ -139,9 +141,10 @@ class PrefillPlayboardService
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
-            foreach ($this->legalValues as $legalValue) {
+            foreach ($shuffledValues as $value) {
 
                 foreach ($this->playboard->getBlocks() as $block) {
 
@@ -156,7 +159,7 @@ class PrefillPlayboardService
                             continue;
                         }
 
-                        $field->setValue($legalValue);
+                        $field->setValue($value);
 
                         $row = $this->playboard->getRows()[$field->getRowIndex()];
                         $col = $this->playboard->getColumns()[$field->getColIndex()];
@@ -192,8 +195,9 @@ class PrefillPlayboardService
 
             // prefill fields of first block with randomly shuffled values
             if (null === $parentBlock) {
-                shuffle($this->legalValues);
-                $valueUnits = $this->createUnitMatrices(new ValueIterator(...$this->legalValues))["rowUnits"];
+                $shuffledValues = $this->legalValues;
+                shuffle($shuffledValues);
+                $valueUnits = $this->createUnitMatrices(new ValueIterator(...$shuffledValues))["rowUnits"];
                 $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
