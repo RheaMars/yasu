@@ -42,7 +42,7 @@ class Playboard
                 $field->setValue((int)$fieldData["val"]);
             }
 
-            if ("true" === $fieldData["isFixed"]) {
+            if (true === $fieldData["isFixed"]) {
                 $field->setToFixed();
             }
         }
