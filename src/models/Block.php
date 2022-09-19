@@ -26,7 +26,7 @@ class Block extends ValueGroup
         return $this->playboardRowIndex;
     }
 
-    public function getPlayboardColIndex(): int
+    public function getPlayboardColumnIndex(): int
     {
         return $this->playboardColIndex;
     }

@@ -17,7 +17,7 @@ class PlayboardColumn
         $this->fields = new FieldIterator();
     }
 
-    public function getPlayboardColIndex(): int
+    public function getPlayboardColumnIndex(): int
     {
         return $this->playboardColIndex;
     }

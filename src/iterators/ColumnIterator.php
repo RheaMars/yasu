@@ -40,4 +40,14 @@ class ColumnIterator extends Iterator
             }
         );
     }
+
+    public function getColumnIndices(): array
+    {
+        $columnIndices = [];
+        $columns = new ColumnIterator(...$this->getArrayCopy());
+        foreach ($columns as $column){
+            $columnIndices[] = $column->getIndex();
+        }
+        return $columnIndices;
+    }
 }

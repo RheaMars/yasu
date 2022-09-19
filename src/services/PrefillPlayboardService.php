@@ -68,8 +68,8 @@ class PrefillPlayboardService
         foreach ($playboard->getBlocks() as $block) {
             $indices[] = [
                 "row" => $block->getPlayboardRowIndex(),
-                "col" => $block->getPlayboardColIndex(),
-                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColIndex()
+                "col" => $block->getPlayboardColumnIndex(),
+                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColumnIndex()
             ];
         }
 
@@ -197,14 +197,14 @@ class PrefillPlayboardService
 
     private function getParentBlock(Playboard $playboard, Block $block): ?Block
     {
-        if (1 === $block->getPlayboardRowIndex() && 1 === $block->getPlayboardColIndex()) {
+        if (1 === $block->getPlayboardRowIndex() && 1 === $block->getPlayboardColumnIndex()) {
             return null;
         }
-        if (1 < $block->getPlayboardColIndex()) {
-            return $playboard->getBlocks()[$block->getPlayboardRowIndex() . "-" . ($block->getPlayboardColIndex() - 1)];
+        if (1 < $block->getPlayboardColumnIndex()) {
+            return $playboard->getBlocks()[$block->getPlayboardRowIndex() . "-" . ($block->getPlayboardColumnIndex() - 1)];
         }
         if (1 < $block->getPlayboardRowIndex()) {
-            return $playboard->getBlocks()[($block->getPlayboardRowIndex() - 1) . "-" . $block->getPlayboardColIndex()];
+            return $playboard->getBlocks()[($block->getPlayboardRowIndex() - 1) . "-" . $block->getPlayboardColumnIndex()];
         }
         return null;
     }
