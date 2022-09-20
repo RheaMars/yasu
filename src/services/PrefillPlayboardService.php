@@ -37,9 +37,10 @@ class PrefillPlayboardService
 
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
-            foreach ($this->legalValues as $legalValue) {
+            foreach ($shuffledValues as $value) {
 
                 foreach ($sortedBlockIndices as $blockIndex) {
 
@@ -56,7 +57,7 @@ class PrefillPlayboardService
                             continue;
                         }
 
-                        $field->setValue($legalValue);
+                        $field->setValue($value);
 
                         $row = $this->playboard->getRows()[$field->getRowIndex()];
                         $col = $this->playboard->getColumns()[$field->getColIndex()];
@@ -83,8 +84,8 @@ class PrefillPlayboardService
         foreach ($this->playboard->getBlocks() as $block) {
             $indices[] = [
                 "row" => $block->getPlayboardRowIndex(),
-                "col" => $block->getPlayboardColIndex(),
-                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColIndex()
+                "col" => $block->getPlayboardColumnIndex(),
+                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColumnIndex()
             ];
         }
 
@@ -103,7 +104,8 @@ class PrefillPlayboardService
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
             foreach ($this->playboard->getFields() as $field) {
                 $rowIndex = $field->getRowIndex();
@@ -112,8 +114,8 @@ class PrefillPlayboardService
 
                 $fieldValueIsSet = false;
 
-                foreach ($this->legalValues as $legalValue) {
-                    $field->setValue($legalValue);
+                foreach ($shuffledValues as $value) {
+                    $field->setValue($value);
 
                     $row = $this->playboard->getRows()[$rowIndex];
                     $col = $this->playboard->getColumns()[$colIndex];
@@ -139,9 +141,10 @@ class PrefillPlayboardService
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            shuffle($this->legalValues);
+            $shuffledValues = $this->legalValues;
+            shuffle($shuffledValues);
 
-            foreach ($this->legalValues as $legalValue) {
+            foreach ($shuffledValues as $value) {
 
                 foreach ($this->playboard->getBlocks() as $block) {
 
@@ -156,7 +159,7 @@ class PrefillPlayboardService
                             continue;
                         }
 
-                        $field->setValue($legalValue);
+                        $field->setValue($value);
 
                         $row = $this->playboard->getRows()[$field->getRowIndex()];
                         $col = $this->playboard->getColumns()[$field->getColIndex()];
@@ -192,8 +195,9 @@ class PrefillPlayboardService
 
             // prefill fields of first block with randomly shuffled values
             if (null === $parentBlock) {
-                shuffle($this->legalValues);
-                $valueUnits = $this->createUnitMatrices(new ValueIterator(...$this->legalValues))["rowUnits"];
+                $shuffledValues = $this->legalValues;
+                shuffle($shuffledValues);
+                $valueUnits = $this->createUnitMatrices(new ValueIterator(...$shuffledValues))["rowUnits"];
                 $block->prefillFromMatrix($valueUnits);
             }
             // prefill from left parent
@@ -211,14 +215,14 @@ class PrefillPlayboardService
 
     private function getParentBlock(Block $block): ?Block
     {
-        if (1 === $block->getPlayboardRowIndex() && 1 === $block->getPlayboardColIndex()) {
+        if (1 === $block->getPlayboardRowIndex() && 1 === $block->getPlayboardColumnIndex()) {
             return null;
         }
-        if (1 < $block->getPlayboardColIndex()) {
-            return $this->playboard->getBlocks()[$block->getPlayboardRowIndex() . "-" . ($block->getPlayboardColIndex() - 1)];
+        if (1 < $block->getPlayboardColumnIndex()) {
+            return $this->playboard->getBlocks()[$block->getPlayboardRowIndex() . "-" . ($block->getPlayboardColumnIndex() - 1)];
         }
         if (1 < $block->getPlayboardRowIndex()) {
-            return $this->playboard->getBlocks()[($block->getPlayboardRowIndex() - 1) . "-" . $block->getPlayboardColIndex()];
+            return $this->playboard->getBlocks()[($block->getPlayboardRowIndex() - 1) . "-" . $block->getPlayboardColumnIndex()];
         }
         return null;
     }

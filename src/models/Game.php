@@ -5,10 +5,13 @@ namespace src\models;
 
 class Game
 {
-    public function initializeGame(int $baseSize, float $level = 0.6): string
+    public function initializeGame(int $baseSize, float $level = 0.7): string
     {
         $playboard = new Playboard($baseSize);
         $playboard->prefillFields();
+
+        // echo $playboard->generatePlayboardHtml();
+        $playboard->randomize();
         if ($playboard->isValid() && $playboard->isComplete()) {
             $playboard->emptyFieldsByPercentage($level);
             $playboard->setPrefilledFieldsToFixed();

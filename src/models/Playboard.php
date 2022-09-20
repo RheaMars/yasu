@@ -8,7 +8,10 @@ use src\iterators\BlockIterator;
 use src\iterators\ColumnIterator;
 use src\iterators\FieldIterator;
 use src\iterators\RowIterator;
+use src\iterators\PlayboardRowIterator;
+use src\iterators\PlayboardColumnIterator;
 use src\services\PrefillPlayboardService;
+use src\services\RandomizePlayboardService;
 
 class Playboard
 {
@@ -21,6 +24,10 @@ class Playboard
     private ColumnIterator $columns;
 
     private BlockIterator $blocks;
+
+    private PlayboardRowIterator $playboardRows;
+
+    private PlayboardColumnIterator $playboardColumns;
 
     public function __construct(int $baseSize)
     {
@@ -116,6 +123,56 @@ class Playboard
         return $this->rows;
     }
 
+    public function getRowsByPlayboardRowIndex(int $playboardRowIndex): RowIterator
+    {
+        $rows = new RowIterator();
+        foreach ($this->fields as $field){
+            $fieldRowIndex = $field->getRowIndex();
+            if ($field->getPlayboardRowIndex() === $playboardRowIndex
+                && !isset($rows[$fieldRowIndex])){
+                $rows[$fieldRowIndex] = $this->rows[$fieldRowIndex];
+            }
+        }
+        return $rows;
+    }
+
+    public function getColumnsByPlayboardColumnIndex(int $playboardColumnIndex): ColumnIterator
+    {
+        $columns = new ColumnIterator();
+        foreach ($this->fields as $field){
+            $fieldColumnIndex = $field->getColIndex();
+            if ($field->getPlayboardColumnIndex() === $playboardColumnIndex
+                && !isset($columns[$fieldColumnIndex])){
+                $columns[$fieldColumnIndex] = $this->columns[$fieldColumnIndex];
+            }
+        }
+        return $columns;
+    }
+
+    // TODO: consider moving to RowIterator
+    public function getRowByIndex(int $index): Row
+    {
+        $rows = new RowIterator(...$this->rows);
+        foreach ($rows as $row){
+            if ($index === $row->getIndex()){
+                return $row;
+            }
+        }
+        throw new Exception("No row with index " . $index . " in playboard row with playboard row index " . $this->playboardRowIndex);
+    }
+
+        // TODO: consider moving to ColumnIterator
+        public function getColumnByIndex(int $index): Column
+        {
+            $columns = new ColumnIterator(...$this->columns);
+            foreach ($columns as $column){
+                if ($index === $column->getIndex()){
+                    return $column;
+                }
+            }
+            throw new Exception("No column with index " . $index . " in playboard column with playboard column index " . $this->playboardColumnIndex);
+        }
+
     public function getColumns(): ColumnIterator
     {
         return $this->columns;
@@ -124,6 +181,16 @@ class Playboard
     public function getBlocks(): BlockIterator
     {
         return $this->blocks;
+    }
+
+    public function getPlayboardRows(): PlayboardRowIterator
+    {
+        return $this->playboardRows;
+    }
+
+    public function getPlayboardColumns(): PlayboardColumnIterator
+    {
+        return $this->playboardColumns;
     }
 
     public function isValid(): bool
@@ -194,6 +261,13 @@ class Playboard
         $service->prefillByPermutations();
     }
 
+    public function randomize(): void
+    {
+        $service = new RandomizePlayboardService($this);
+        $service->permuteRowsWithinPlayboardRows();
+        $service->permuteColumnsWithinPlayboardColumns();
+    }
+
     private function createEmptyPlayboard()
     {
         $fields = $this->createEmptyFields($this->baseSize);
@@ -202,6 +276,8 @@ class Playboard
         $this->rows = $this->createEmptyRows($fields);
         $this->columns = $this->createEmptyColumns($fields);
         $this->blocks = $this->createEmptyBlocks($fields);
+        $this->playboardRows = $this->createEmptyPlayboardRows($fields);
+        $this->playboardColumns = $this->createEmptyPlayboardColumns($fields);
     }
 
     private function createEmptyFields($baseSize): FieldIterator
@@ -252,7 +328,7 @@ class Playboard
         $blocks = new BlockIterator();
         foreach ($fields as $field) {
             $playboardRowIndex = $field->getPlayboardRowIndex();
-            $playboardColIndex = $field->getPlayboardColIndex();
+            $playboardColIndex = $field->getPlayboardColumnIndex();
             $blockIndex = $playboardRowIndex . "-" . $playboardColIndex;
 
             if (!isset($blocks[$blockIndex])) {
@@ -263,5 +339,37 @@ class Playboard
             $block->addField($field);
         }
         return $blocks;
+    }
+
+    private function createEmptyPlayboardRows(FieldIterator $fields): PlayboardRowIterator
+    {
+        $playboardRows = new PlayboardRowIterator();
+        foreach ($fields as $field) {
+            $playboardRowIndex = $field->getPlayboardRowIndex();
+        
+            if (!isset($playboardRows[$playboardRowIndex])) {
+                $playboardRow = new PlayboardRow($playboardRowIndex);
+                $playboardRows[$playboardRowIndex] = $playboardRow;
+            }
+            $playboardRow = $playboardRows[$playboardRowIndex];
+            $playboardRow->addField($field);
+        }
+        return $playboardRows;
+    }
+
+    private function createEmptyPlayboardColumns(FieldIterator $fields): PlayboardColumnIterator
+    {
+        $playboardColumns = new PlayboardColumnIterator();
+        foreach ($fields as $field) {
+            $playboardColumnIndex = $field->getPlayboardColumnIndex();
+        
+            if (!isset($playboardColumns[$playboardColumnIndex])) {
+                $playboardColumn = new PlayboardColumn($playboardColumnIndex);
+                $playboardColumns[$playboardColumnIndex] = $playboardColumn;
+            }
+            $playboardColumn = $playboardColumns[$playboardColumnIndex];
+            $playboardColumn->addField($field);
+        }
+        return $playboardColumns;
     }
 }
