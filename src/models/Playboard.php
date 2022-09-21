@@ -264,8 +264,10 @@ class Playboard
     public function randomize(): void
     {
         $service = new RandomizePlayboardService($this);
-        $service->permuteRowsWithinPlayboardRows();
-        $service->permuteColumnsWithinPlayboardColumns();
+        // $service->permuteRowsWithinPlayboardRows();
+        // $service->permuteColumnsWithinPlayboardColumns();
+        // $service->permuteValues();
+        $service->permuteByRotatingBlocks();
     }
 
     private function createEmptyPlayboard()
