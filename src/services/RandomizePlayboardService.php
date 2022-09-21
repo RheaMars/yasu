@@ -129,7 +129,7 @@ class RandomizePlayboardService
     {
         $turns = 1;
         foreach ($this->playboard->getBlocks() as $block) {
-            $this->rotateBlockByNumberOfFields($block, -1);
+            $this->rotateBlockByNumberOfFields($block, $this->playboard->getBaseSize());
             break;
         }
     }
@@ -143,11 +143,10 @@ class RandomizePlayboardService
     {
         $baseSize = $this->playboard->getBaseSize();
 
-        // determine the actual number of turns for the outer ring in a counterclockwise manner
+        // determine the actual number of turns (for the outer ring) in a counterclockwise manner
         $sizeOfOuterRing = $baseSize === 1? 1: ($baseSize - 1) * 4;
         $turnsModBaseSize = $turns % $sizeOfOuterRing;
         $turns = $turnsModBaseSize < 0? ($sizeOfOuterRing + $turnsModBaseSize): $turnsModBaseSize;
-        echo "TURNS: $turns<br>";
         if (0 === $turns) {
             return;
         }
