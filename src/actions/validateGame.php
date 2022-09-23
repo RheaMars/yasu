@@ -15,14 +15,6 @@ $baseSize = (int)pow(sizeof($fieldData), 1/4);
 $playboard = new Playboard($baseSize);
 $playboard->setFieldsFromData($fieldData);
 
-$invalidFields = $playboard->getInvalidFields();
-
-$invalidFieldsPreparedForHtml = [];
-foreach ($invalidFields as $field) {
-    $invalidFieldsPreparedForHtml[] = [
-        "row" => $field->getRowIndex(),
-        "col" => $field->getColIndex()
-    ];
-}
+$invalidFieldsPreparedForHtml = $playboard->getFieldsPreparedForHtml($playboard->getInvalidFields());
 
 echo json_encode($invalidFieldsPreparedForHtml);

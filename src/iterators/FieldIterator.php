@@ -51,6 +51,16 @@ class FieldIterator extends Iterator
         }
     }
 
+    public function emptyNonFixedFields(): void
+    {
+        $fields = new FieldIterator(...$this->getArrayCopy());
+        foreach ($fields as $field) {
+            if (!$field->isValueFixed()) {
+                $field->setValue(null);
+            }
+        }
+    }
+
     public function emptyValues(): void
     {
         $fields = new FieldIterator(...$this->getArrayCopy());

@@ -35,11 +35,15 @@ spl_autoload_register(function ($class) {
     <div class="mt-10" id="playboardWrapper"></div>
 
     <div class="mt-10">
-        <button style="display:none" id="validateGame">Validate game</button>
+        <button style="display:none" id="validateGame" class="toggleOnCreateGame">Validate game</button>
     </div>
 
     <div class="mt-10">
-        <button style="display:none" id="restartGame">Restart game</button>
+        <button style="display:none" id="restartGame" class="toggleOnCreateGame">Restart game</button>
+    </div>
+
+    <div class="mt-10">
+        <button style="display:none" id="solveGame" class="toggleOnCreateGame">Solve game</button>
     </div>
 
 </body>

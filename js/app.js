@@ -10,6 +10,10 @@ $(document).ready(function () {
         validateGame();
     });
 
+    $("#solveGame").click(function() {
+        solveGame();
+    });
+
     $("#restartGame").click(function() {
         $("input.field").filter(function() {
             return !($(this).is(".isFixed"));
@@ -26,13 +30,11 @@ function requestNewGame() {
         beforeSend: function() {
             $("#loadingGif").show();
             $("#playboardWrapper").html("");
-            $("#validateGame").hide();
-            $("#restartGame").hide();
+            $(".toggleOnCreateGame").hide();
         },
         complete: function () {
             $("#loadingGif").hide();
-            $("#validateGame").show();
-            $("#restartGame").show();
+            $(".toggleOnCreateGame").show();
         },
         data: { baseSize: $("#selectBaseSize").val() },
         success: function(result) {
@@ -55,19 +57,8 @@ function requestNewGame() {
 }
 
 function validateGame() {
-    const $fields = $("input.field");
-    let fieldData = [];
-    
-    $fields.each(function(index){
-        fieldData.push(
-            {
-                row: $(this).attr('data-row'),
-                col: $(this).attr('data-col'),
-                val: $(this).val(),
-                isFixed: $(this).hasClass("isFixed")
-            }
-        );
-    });
+
+    let fieldData = getFieldData();
 
     $.ajax({
         url: "src/actions/validateGame.php",
@@ -84,10 +75,75 @@ function validateGame() {
                 alert("Playboard is valid.");
             }
             else {
-                invalidFields.forEach((invalidField) => {
-                    $('.field[data-row="' + invalidField.row + '"][data-col="' + invalidField.col + '"]').parent("td").addClass("invalidValue");
-                });
+                markInvalidFields(invalidFields);
             }
         }
     })
+}
+
+function solveGame() {
+    let fieldData = getFieldData();
+
+    $.ajax({
+        url: "src/actions/solveGame.php",
+        method: "POST",
+        beforeSend: function() {
+            $("#loadingGif").show();
+            $("td").removeClass("invalidValue");
+        },
+        complete: function () {
+            $("#loadingGif").hide();
+        },
+        data: {
+            fieldData: JSON.stringify(fieldData)
+        },
+        success: function(result) {
+            const response = JSON.parse(result);
+            console.log(response.status);
+
+            if (response.status === "invalid") {
+                markInvalidFields(response.invalidFields);
+                alert("Current state of playboard is invalid so it can't be solved.");
+            }
+            else if (response.status === "unresolved") {
+                alert("Could not solve playboard. You might want to try again.");
+                //TODO Basil die alte Zicke
+                markInvalidFields(response.fields);
+            }
+            else {
+                alert("Playboard is solved");
+                markSolvedFields(response.fields);
+            }
+        }
+    })
+}
+
+function getFieldData() {
+    const $fields = $("input.field");
+    let fieldData = [];
+
+    $fields.each(function(index){
+        fieldData.push(
+            {
+                row: $(this).attr('data-row'),
+                col: $(this).attr('data-col'),
+                val: $(this).val(),
+                isFixed: $(this).hasClass("isFixed")
+            }
+        );
+    });
+
+    return fieldData;
+}
+
+function markInvalidFields(invalidFields) {
+    invalidFields.forEach((invalidField) => {
+        $('.field[data-row="' + invalidField.row + '"][data-col="' + invalidField.col + '"]').parent("td").addClass("invalidValue");
+    });
+}
+
+function markSolvedFields(solvedFields) {
+    solvedFields.forEach((solvedField) => {
+        $('.field[data-row="' + solvedField.row + '"][data-col="' + solvedField.col + '"]').val(solvedField.value);
+    });
 }

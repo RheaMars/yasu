@@ -12,6 +12,7 @@ use src\iterators\PlayboardRowIterator;
 use src\iterators\PlayboardColumnIterator;
 use src\services\PrefillPlayboardService;
 use src\services\RandomizePlayboardService;
+use src\services\SolvePlayboardService;
 
 class Playboard
 {
@@ -215,6 +216,19 @@ class Playboard
         return new FieldIterator(...$invalidFields);
     }
 
+    public function getFieldsPreparedForHtml(FieldIterator $fields): array
+    {
+        $fieldsPreparedForHtml = [];
+        foreach ($fields as $field) {
+            $fieldsPreparedForHtml[] = [
+                "row" => $field->getRowIndex(),
+                "col" => $field->getColIndex(),
+                "value" => $field->getValue()
+            ];
+        }
+        return $fieldsPreparedForHtml;
+    }
+
     public function isComplete(): bool
     {
         return $this->fields->allValuesSet();
@@ -259,6 +273,18 @@ class Playboard
         //$service->prefillByRows();
         //$service->prefillByPlayboardRows();
         $service->prefillByPermutations();
+    }
+
+    public function solve(): bool
+    {
+        $service = new SolvePlayboardService($this, 1000000);
+        $service->solveByBlocksDiagonally();
+
+        if ($this->isValid() && $this->isComplete()) {
+            return true;
+        }
+
+        return false;
     }
 
     public function randomize(): void
@@ -346,7 +372,7 @@ class Playboard
         $playboardRows = new PlayboardRowIterator();
         foreach ($fields as $field) {
             $playboardRowIndex = $field->getPlayboardRowIndex();
-        
+
             if (!isset($playboardRows[$playboardRowIndex])) {
                 $playboardRow = new PlayboardRow($playboardRowIndex);
                 $playboardRows[$playboardRowIndex] = $playboardRow;
@@ -362,7 +388,7 @@ class Playboard
         $playboardColumns = new PlayboardColumnIterator();
         foreach ($fields as $field) {
             $playboardColumnIndex = $field->getPlayboardColumnIndex();
-        
+
             if (!isset($playboardColumns[$playboardColumnIndex])) {
                 $playboardColumn = new PlayboardColumn($playboardColumnIndex);
                 $playboardColumns[$playboardColumnIndex] = $playboardColumn;
