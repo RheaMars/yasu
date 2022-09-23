@@ -128,9 +128,23 @@ class RandomizePlayboardService
     public function permuteByRotatingBlocks(): void
     {
         $turns = 1;
+        // $turns = $this->playboard->getBaseSize();
         foreach ($this->playboard->getBlocks() as $block) {
-            $this->rotateBlockByNumberOfFields($block, $this->playboard->getBaseSize());
-            break;
+
+            // if ($block->getPlayboardRowIndex() < $block->getPlayboardColumnIndex()) {
+            //     $this->rotateBlockByNumberOfFields($block, -$turns);
+            // }
+            // else if ($block->getPlayboardRowIndex() > $block->getPlayboardColumnIndex()) {
+            //     $this->rotateBlockByNumberOfFields($block, $turns);
+            // }
+
+            // if ($block->getPlayboardRowIndex() == $block->getPlayboardColumnIndex()) {
+            //     $this->rotateBlockByNumberOfFields($block, $turns);
+            // }
+
+            if (1 === $block->getPlayboardRowIndex() && 1 == $block->getPlayboardColumnIndex()) {
+                $this->rotateBlockByNumberOfFields($block, $turns);
+            }
         }
     }
 

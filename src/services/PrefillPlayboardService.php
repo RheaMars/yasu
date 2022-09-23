@@ -6,6 +6,7 @@ namespace src\services;
 use src\iterators\FieldIterator;
 use src\iterators\ValueIterator;
 use src\models\Block;
+use src\models\PermutableArray;
 use src\models\Playboard;
 
 class PrefillPlayboardService
@@ -31,24 +32,61 @@ class PrefillPlayboardService
     public function prefillByBlocksDiagonally(): void
     {
         $sortedBlockIndices = $this->getBlockIndicesSortedDiagonally();
+        $permutableValues = new PermutableArray($this->legalValues);
 
+        $avoidValuePermutations = [$this->legalValues];
         $counter = 0;
         while ($counter < $this->maxRounds && !($this->playboard->isValid() && $this->playboard->isComplete())) {
-
+            $permutedValues = $permutableValues->getNewRandomPermutation($avoidValuePermutations)->getUnits();
+            // $permutedValues = $this->legalValues;
+            $avoidValuePermutations[] = $permutedValues;
             $counter++;
             $this->playboard->emptyFieldsByPercentage(1.0);
-            $shuffledValues = $this->legalValues;
-            shuffle($shuffledValues);
 
-            foreach ($shuffledValues as $value) {
+            foreach ($permutedValues as $value) {
 
                 foreach ($sortedBlockIndices as $blockIndex) {
 
                     $block = $this->playboard->getBlocks()[$blockIndex["row"] . "-" . $blockIndex["col"]];
 
-                    $blockFields = $block->getFields()->toArray();
-                    shuffle($blockFields);
+                    // // with PermutableArray START
+                    // $blockFields = new PermutableArray($block->getFields()->toArray(), false);
+                    // echo "<pre>";
+                    // echo "BLOCK FIELDS PRE-SHUFFLE<br>";
+                    // var_dump($blockFields);
 
+                    // $permutedBlockFields = $blockFields->getNewRandomPermutation([$blockFields->getUnits(), false])->getUnits();
+                    // echo "BLOCK FIELDS POST-SHUFFLE<br>";
+                    // var_dump($permutedBlockFields);
+                    
+                    // foreach ($permutedBlockFields as $field) {
+                    //     if (null !== $field->getValue()) {
+                    //         continue;
+                    //     }
+
+                    //     $field->setValue($value);
+
+                    //     $row = $this->playboard->getRows()[$field->getRowIndex()];
+                    //     $col = $this->playboard->getColumns()[$field->getColIndex()];
+                    //     $block = $this->playboard->getBlocks()[$field->getBlockIndex()];
+
+                    //     if ($row->isValid() && $col->isValid() && $block->isValid()) {
+                    //         $legalValueSetInBlock = true;
+                    //         break;
+                    //     }
+                    //     $field->setValue(null);
+                    // }
+                    // // with PermutableArray END
+
+                    
+                    // without PermutableArray START
+                    $blockFields = $block->getFields()->toArray();
+                    // echo "<pre>";
+                    // echo "BLOCK FIELDS PRE-SHUFFLE<br>";
+                    // var_dump($blockFields);
+                    // shuffle($blockFields);
+                    // echo "BLOCK FIELDS POST-SHUFFLE<br>";
+                    // var_dump($blockFields);
                     $legalValueSetInBlock = false;
 
                     foreach ($blockFields as $field) {
@@ -73,9 +111,11 @@ class PrefillPlayboardService
                     if (!$legalValueSetInBlock) {
                         break 2; // start next round
                     }
+                    // without PermutableArray END
                 }
             }
         }
+        echo "After $counter rounds... <br>";
     }
 
     private function getBlockIndicesSortedDiagonally(): array
@@ -256,15 +296,10 @@ class PrefillPlayboardService
 
     private function getPermutedUnits(array $parentPermutationUnits): array
     {
-        $permutedUnits = $this->getNextCyclicPermutation($parentPermutationUnits);
-        $fields = FieldIterator::mergeAll($permutedUnits);
+        $parentPermutation = new PermutableArray($parentPermutationUnits);
+        $permutedUnits = $parentPermutation->getNextCyclicPermutation($parentPermutationUnits);
+        $fields = FieldIterator::mergeAll($permutedUnits->getUnits());
 
         return $this->createUnitMatrices($fields->getValues());
-    }
-
-    private function getNextCyclicPermutation(array $permutationUnits): array
-    {
-        $headUnit = array_shift($permutationUnits);
-        return array_merge($permutationUnits, [$headUnit]);
     }
 }

@@ -12,6 +12,7 @@ class Game
 
         // echo $playboard->generatePlayboardHtml();
         $playboard->randomize();
+
         // if ($playboard->isValid() && $playboard->isComplete()) {
         //     $playboard->emptyFieldsByPercentage($level);
         //     $playboard->setPrefilledFieldsToFixed();
