@@ -19,7 +19,7 @@ $(document).ready(function () {
             return !($(this).is(".isFixed"));
         }).val("");
 
-        $("td").removeClass("invalidValue");
+        $("td").removeClass("invalidValue").removeClass("unambiguouslySolvedValue").removeClass("ambiguouslySolvedValue");
     });
 })
 
@@ -44,7 +44,7 @@ function requestNewGame() {
 
             $("input.field").on("change", function() {
 
-                $(this).parent("td").removeClass("invalidValue");
+                $(this).parent("td").removeClass("invalidValue").removeClass("unambiguouslySolvedValue").removeClass("ambiguouslySolvedValue");
 
                 const value = $(this).val();
                 if (!$.isNumeric(value) || value > maxNumberAllowed || value < 1) {
@@ -67,7 +67,7 @@ function validateGame() {
             fieldData: JSON.stringify(fieldData)
         },
         beforeSend: function() {
-            $("td").removeClass("invalidValue");
+            $("td").removeClass("invalidValue").removeClass("unambiguouslySolvedValue").removeClass("ambiguouslySolvedValue");
         },
         success: function(result) {
             const invalidFields = JSON.parse(result);
@@ -89,7 +89,7 @@ function solveGame() {
         method: "POST",
         beforeSend: function() {
             $("#loadingGif").show();
-            $("td").removeClass("invalidValue");
+            $("td").removeClass("invalidValue").removeClass("unambiguouslySolvedValue").removeClass("ambiguouslySolvedValue");
         },
         complete: function () {
             $("#loadingGif").hide();
@@ -136,14 +136,19 @@ function getFieldData() {
     return fieldData;
 }
 
-function markInvalidFields(invalidFields) {
-    invalidFields.forEach((invalidField) => {
-        $('.field[data-row="' + invalidField.row + '"][data-col="' + invalidField.col + '"]').parent("td").addClass("invalidValue");
+function markInvalidFields(fields) {
+    fields.forEach((field) => {
+        $('.field[data-row="' + field.row + '"][data-col="' + field.col + '"]').parent("td").addClass("invalidValue");
     });
 }
 
-function markSolvedFields(solvedFields) {
-    solvedFields.forEach((solvedField) => {
-        $('.field[data-row="' + solvedField.row + '"][data-col="' + solvedField.col + '"]').val(solvedField.value);
+function markSolvedFields(fields) {
+    fields.forEach((field) => {
+        if (field.isSolvedUnambiguously) {
+            $('.field[data-row="' + field.row + '"][data-col="' + field.col + '"]').val(field.value).parent("td").addClass("unambiguouslySolvedValue");
+        }
+        else if (field.isSolvedAmbiguously) {
+            $('.field[data-row="' + field.row + '"][data-col="' + field.col + '"]').val(field.value).parent("td").addClass("ambiguouslySolvedValue");
+        }
     });
 }

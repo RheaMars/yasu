@@ -162,17 +162,17 @@ class Playboard
         throw new Exception("No row with index " . $index . " in playboard row with playboard row index " . $this->playboardRowIndex);
     }
 
-        // TODO: consider moving to ColumnIterator
-        public function getColumnByIndex(int $index): Column
-        {
-            $columns = new ColumnIterator(...$this->columns);
-            foreach ($columns as $column){
-                if ($index === $column->getIndex()){
-                    return $column;
-                }
+    // TODO: consider moving to ColumnIterator
+    public function getColumnByIndex(int $index): Column
+    {
+        $columns = new ColumnIterator(...$this->columns);
+        foreach ($columns as $column){
+            if ($index === $column->getIndex()){
+                return $column;
             }
-            throw new Exception("No column with index " . $index . " in playboard column with playboard column index " . $this->playboardColumnIndex);
         }
+        throw new Exception("No column with index " . $index . " in playboard column with playboard column index " . $this->playboardColumnIndex);
+    }
 
     public function getColumns(): ColumnIterator
     {
@@ -223,7 +223,10 @@ class Playboard
             $fieldsPreparedForHtml[] = [
                 "row" => $field->getRowIndex(),
                 "col" => $field->getColIndex(),
-                "value" => $field->getValue()
+                "value" => $field->getValue(),
+                "isFixed" => $field->isValueFixed(),
+                "isSolvedUnambiguously" => $field->isValueSolvedUnambiguously(),
+                "isSolvedAmbiguously" => $field->isValueSolvedAmbiguously()
             ];
         }
         return $fieldsPreparedForHtml;
@@ -269,22 +272,24 @@ class Playboard
     {
         $service = new PrefillPlayboardService($this);
         //$service->prefillRandomly();
-        //$service->prefillByBlocksDiagonally();
+        $service->prefillByBlocksDiagonally();
         //$service->prefillByRows();
         //$service->prefillByPlayboardRows();
-        $service->prefillByPermutations();
+        //$service->prefillByPermutations();
     }
 
     public function solve(): bool
     {
         $service = new SolvePlayboardService($this, 1000000);
-        $service->solveByBlocksDiagonally();
+        //$service->solveByBlocksDiagonally();
+         $service->solveByStrategies();
 
-        if ($this->isValid() && $this->isComplete()) {
-            return true;
-        }
-
-        return false;
+//        if ($this->isValid() && $this->isComplete()) {
+//            return true;
+//        }
+//
+//        return false;
+        return true;
     }
 
     public function randomize(): void

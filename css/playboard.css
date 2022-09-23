@@ -51,3 +51,11 @@ td.isFixed {
 td.invalidValue, td.invalidValue input {
     background-color: #f28585;
 }
+
+td.unambiguouslySolvedValue, td.unambiguouslySolvedValue input {
+    background-color: #f2e085ff;
+}
+
+td.ambiguouslySolvedValue, td.ambiguouslySolvedValue input {
+    background-color: #85ADF2FF;
+}

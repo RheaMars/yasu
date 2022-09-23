@@ -32,10 +32,13 @@ class FieldIterator extends Iterator
         );
     }
 
-    public function getValues(): ValueIterator
+    public function getValues(bool $withEmptyFields = true): ValueIterator
     {
         $values = new ValueIterator();
         foreach ($this->getArrayCopy() as $field) {
+            if (!$withEmptyFields && null === $field->getValue()) {
+                continue;
+            }
             $values[] = $field->getValue();
         }
         return $values;

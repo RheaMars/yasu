@@ -23,6 +23,10 @@ class Field
 
     private bool $isValueFixed;
 
+    private bool $isValueSolvedUnambiguously = false;
+
+    private bool $isValueSolvedAmbiguously = false;
+
     public function __construct(int $baseSize, int $rowIndex, int $colIndex, ?int $value, bool $isValueFixed = false)
     {
         $this->rowIndex = $rowIndex;
@@ -111,5 +115,30 @@ class Field
     public function isValueFixed(): bool
     {
         return $this->isValueFixed;
+    }
+
+    public function setToSolvedUnambiguously(): void
+    {
+        $this->isValueSolvedUnambiguously = true;
+    }
+
+    public function isValueSolvedUnambiguously(): bool
+    {
+        return $this->isValueSolvedUnambiguously;
+    }
+
+    public function setToSolvedAmbiguously(): void
+    {
+        $this->isValueSolvedAmbiguously = true;
+    }
+
+    public function unsetSolvedAmbiguously(): void
+    {
+        $this->isValueSolvedAmbiguously = false;
+    }
+
+    public function isValueSolvedAmbiguously(): bool
+    {
+        return $this->isValueSolvedAmbiguously;
     }
 }
