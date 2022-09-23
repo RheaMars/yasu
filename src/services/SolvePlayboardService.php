@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace src\services;
 
+use FilterIterator;
 use src\exceptions\UnsolvableFieldException;
 use src\iterators\FieldIterator;
 use src\iterators\ValueIterator;
@@ -118,36 +119,21 @@ class SolvePlayboardService
         }
     }
 
-    // TODO Verallgemeinern für alle FieldIterators.
-    private function getAmbiguousFields(): FieldIterator
-    {
-        $fields = new FieldIterator();
-        foreach ($this->playboard->getFields() as $field) {
-            if (null !== $field->getValue()) {
-                continue;
-            }
-            if (sizeof($this->findPossibleValuesOfField($field)) > 1) {
-                $fields[] = $field;
-            }
-        }
-        return $fields;
-    }
-
     /**
      * @throws UnsolvableFieldException
      */
-    private function solveByUnambiguousStrategies(bool $followUpCall = false): void
+    private function solveByUnambiguousStrategies(): void
     {
         $deadend = false;
         while (!$deadend) {
-            $numberOfFieldsSolvedByMissingValuesInFields = $this->solveByUnambiguousMissingValuesInFields($followUpCall);
-            $numberOfFieldsSolvedByMissingValuesInBlocks = $this->solveByUnambiguousMissingValuesInBlocks($followUpCall);
+            $numberOfFieldsSolvedByMissingValuesInFields = $this->solveByUnambiguousMissingValuesInFields();
+            $numberOfFieldsSolvedByMissingValuesInValueGroups = $this->solveByUnambiguousMissingValuesInValueGroups();
 
-            if (0 === $numberOfFieldsSolvedByMissingValuesInFields + $numberOfFieldsSolvedByMissingValuesInBlocks) {
+            if (0 === $numberOfFieldsSolvedByMissingValuesInFields + $numberOfFieldsSolvedByMissingValuesInValueGroups) {
                 $deadend = true;
             }
-        }
-    }
+                    }
+                }
 
     /**
      * @throws UnsolvableFieldException
@@ -197,9 +183,12 @@ class SolvePlayboardService
         }
     }
 
-    private function solveByUnambiguousMissingValuesInBlocks(): int
+
+    private function solveByUnambiguousMissingValuesInValueGroups(): int
     {
         $numberOfFieldsSolved = 0;
+
+        // blocks
         foreach ($this->playboard->getBlocks() as $block) {
 
             $possibleFieldValues = [];
@@ -228,8 +217,80 @@ class SolvePlayboardService
             }
         }
 
+        // rows
+        foreach ($this->playboard->getRows() as $row) {
+
+            $possibleFieldValues = [];
+            foreach ($row->getFields() as $field) {
+                if (null !== $field->getValue()) {
+                    continue;
+                }
+                $possibleFieldValues[] = $this->findPossibleValuesOfField($field)->toArray();
+            }
+
+            $possibleFieldValuesMerged = array_merge(...$possibleFieldValues);
+            $duplicateFieldValues = array_unique(array_values(array_diff_assoc($possibleFieldValuesMerged, array_unique($possibleFieldValuesMerged))));
+            $uniqueFieldValues = array_diff(array_unique($possibleFieldValuesMerged), $duplicateFieldValues);
+
+            foreach ($uniqueFieldValues as $uniqueFieldValue) {
+                foreach ($row->getFields() as $field) {
+                    if (null !== $field->getValue()) {
+                        continue;
+                    }
+                    if (in_array($uniqueFieldValue, $this->findPossibleValuesOfField($field)->toArray())) {
+                        $field->setValue($uniqueFieldValue);
+                        $field->setToSolvedUnambiguously();
+                        $numberOfFieldsSolved++;
+                    }
+                }
+            }
+        }
+
+        // columns
+        foreach ($this->playboard->getColumns() as $column) {
+
+            $possibleFieldValues = [];
+            foreach ($column->getFields() as $field) {
+                if (null !== $field->getValue()) {
+                    continue;
+                }
+                $possibleFieldValues[] = $this->findPossibleValuesOfField($field)->toArray();
+            }
+
+            $possibleFieldValuesMerged = array_merge(...$possibleFieldValues);
+            $duplicateFieldValues = array_unique(array_values(array_diff_assoc($possibleFieldValuesMerged, array_unique($possibleFieldValuesMerged))));
+            $uniqueFieldValues = array_diff(array_unique($possibleFieldValuesMerged), $duplicateFieldValues);
+
+            foreach ($uniqueFieldValues as $uniqueFieldValue) {
+                foreach ($column->getFields() as $field) {
+                    if (null !== $field->getValue()) {
+                        continue;
+                    }
+                    if (in_array($uniqueFieldValue, $this->findPossibleValuesOfField($field)->toArray())) {
+                        $field->setValue($uniqueFieldValue);
+                        $field->setToSolvedUnambiguously();
+                        $numberOfFieldsSolved++;
+                    }
+                }
+            }
+        }
         return $numberOfFieldsSolved;
     }
+
+    private function getAmbiguousFields(FieldIterator $fields): FieldIterator
+    {
+        $ambiguousFields = new FieldIterator();
+        foreach ($fields as $field) {
+            if (null !== $field->getValue()) {
+                continue;
+            }
+            if (sizeof($this->findPossibleValuesOfField($field)) > 1) {
+                $ambiguousFields[] = $field;
+            }
+        }
+        return $ambiguousFields;
+    }
+
 
     private function findPossibleValuesOfField(Field $field): ValueIterator
     {
