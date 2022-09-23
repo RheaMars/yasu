@@ -82,8 +82,8 @@ class SolvePlayboardService
         foreach ($this->playboard->getBlocks() as $block) {
             $indices[] = [
                 "row" => $block->getPlayboardRowIndex(),
-                "col" => $block->getPlayboardColIndex(),
-                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColIndex()
+                "col" => $block->getPlayboardColumnIndex(),
+                "sum" => $block->getPlayboardRowIndex() + $block->getPlayboardColumnIndex()
             ];
         }
 
