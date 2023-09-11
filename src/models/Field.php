@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace src\models;
 
+use src\iterators\ValueIterator;
+
 class Field
 {
     private int $rowIndex;
@@ -20,6 +22,8 @@ class Field
     private int $blockColIndex;
 
     private ?int $value;
+
+    private ?ValueIterator $validValues = null;
 
     private bool $isValueFixed;
 
@@ -111,5 +115,15 @@ class Field
     public function isValueFixed(): bool
     {
         return $this->isValueFixed;
+    }
+
+    public function setValidValues(ValueIterator $valueIterator): void
+    {
+        $this->validValues = $valueIterator;
+    }
+
+    public function getValidValues(): ValueIterator
+    {
+        return $this->validValues;
     }
 }

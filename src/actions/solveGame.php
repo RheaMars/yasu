@@ -29,8 +29,7 @@ else {
         echo json_encode(["status" => "solved", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getFields())]);
     }
     else {
-        // TODO No fields if unresolved...
-        echo json_encode(["status" => "unresolved", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getFields())]);
+        echo json_encode(["status" => "unsolvable", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getNonEmptyUnfixedFields())]);
     }
 }
 

@@ -10,6 +10,7 @@ use src\iterators\FieldIterator;
 use src\iterators\RowIterator;
 use src\iterators\PlayboardRowIterator;
 use src\iterators\PlayboardColumnIterator;
+use src\iterators\ValueIterator;
 use src\services\PrefillPlayboardService;
 use src\services\RandomizePlayboardService;
 use src\services\SolvePlayboardService;
@@ -114,6 +115,24 @@ class Playboard
         return $this->fields;
     }
 
+    public function getEmptyFields(): FieldIterator
+    {
+        $emptyFields = array_filter($this->fields->toArray(), function (Field $field) {
+            return null === $field->getValue();
+        });
+
+        return new FieldIterator(...$emptyFields);
+    }
+
+    public function getNonEmptyUnfixedFields(): FieldIterator
+    {
+        $nonEmptyUnfixedFields = array_filter($this->fields->toArray(), function (Field $field) {
+            return false === $field->isValueFixed() && null !== $field->getValue();
+        });
+
+        return new FieldIterator(...$nonEmptyUnfixedFields);
+    }
+
     public function getBaseSize(): int
     {
         return $this->baseSize;
@@ -149,8 +168,6 @@ class Playboard
         }
         return $columns;
     }
-
-    // TODO: consider moving to RowIterator
     public function getRowByIndex(int $index): Row
     {
         $rows = new RowIterator(...$this->rows);
@@ -159,20 +176,31 @@ class Playboard
                 return $row;
             }
         }
-        throw new Exception("No row with index " . $index . " in playboard row with playboard row index " . $this->playboardRowIndex);
+        throw new Exception("No row with index " . $index . " in playboard");
     }
 
-        // TODO: consider moving to ColumnIterator
-        public function getColumnByIndex(int $index): Column
-        {
-            $columns = new ColumnIterator(...$this->columns);
-            foreach ($columns as $column){
-                if ($index === $column->getIndex()){
-                    return $column;
-                }
+    public function getColumnByIndex(int $index): Column
+    {
+        $columns = new ColumnIterator(...$this->columns);
+        foreach ($columns as $column){
+            if ($index === $column->getIndex()){
+                return $column;
             }
-            throw new Exception("No column with index " . $index . " in playboard column with playboard column index " . $this->playboardColumnIndex);
         }
+        throw new Exception("No column with index " . $index . " in playboard");
+    }
+
+    public function getBlockByIndex(string $index): Block
+    {
+        $blocks = new BlockIterator(...$this->blocks);
+        foreach ($blocks as $block){
+            if ($index === $block->getPlayboardRowIndex()."-".$block->getPlayboardColumnIndex()){
+                return $block;
+            }
+        }
+        throw new Exception("No block with index " . $index . " in playboard");
+
+    }
 
     public function getColumns(): ColumnIterator
     {
@@ -214,6 +242,21 @@ class Playboard
         $invalidFields = array_unique(array_merge(...$invalidFields), SORT_REGULAR);
 
         return new FieldIterator(...$invalidFields);
+    }
+
+    public function getValidValuesForField(Field $field): ValueIterator
+    {
+        $block = $this->getBlocks()[$field->getBlockIndex()];
+        $row = $this->getRows()[$field->getRowIndex()];
+        $column = $this->getColumns()[$field->getColIndex()];
+
+        $remainingValues = [];
+        $remainingValues[] = $block->getRemainingValues()->toArray();
+        $remainingValues[] = $row->getRemainingValues()->toArray();
+        $remainingValues[] = $column->getRemainingValues()->toArray();
+        $validValues = array_intersect(...$remainingValues);
+
+        return new ValueIterator(...$validValues);
     }
 
     public function getFieldsPreparedForHtml(FieldIterator $fields): array
@@ -277,8 +320,13 @@ class Playboard
 
     public function solve(): bool
     {
-        $service = new SolvePlayboardService($this, 1000000);
-        $service->solveByBlocksDiagonally();
+        $service = new SolvePlayboardService($this, 1000);
+
+        $emptyFields = $this->getEmptyFields();
+
+        //$service->solveByBacktracking($emptyFields);
+        //$service->solveByBacktrackingWithValenceSortedFields($emptyFields);
+        $service->solveByBacktrackingWithValenceSortedFieldsAndLazyResetting($emptyFields, $emptyFields);
 
         if ($this->isValid() && $this->isComplete()) {
             return true;
