@@ -23,10 +23,13 @@ if (sizeof($invalidFields) > 0) {
     echo json_encode(["status" => "invalid", "invalidFields" => $invalidFieldsPreparedForHtml]);
 }
 else {
+    $starttime = microtime(true);
     $isSolved = $playboard->solve();
+    $endtime = microtime(true);
+    $timediff = $endtime - $starttime;
 
     if ($isSolved) {
-        echo json_encode(["status" => "solved", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getFields())]);
+        echo json_encode(["status" => "solved", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getFields()), "duration" => $timediff]);
     }
     else {
         echo json_encode(["status" => "unsolvable", "fields" => $playboard->getFieldsPreparedForHtml($playboard->getNonEmptyUnfixedFields())]);
