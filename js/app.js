@@ -99,19 +99,16 @@ function solveGame() {
         },
         success: function(result) {
             const response = JSON.parse(result);
-            console.log(response.status);
 
             if (response.status === "invalid") {
                 markInvalidFields(response.invalidFields);
                 alert("Current state of playboard is invalid so it can't be solved.");
             }
-            else if (response.status === "unresolved") {
-                alert("Could not solve playboard. You might want to try again.");
-                //TODO Basil die alte Zicke
+            else if (response.status === "unsolvable") {
                 markInvalidFields(response.fields);
+                alert("Playboard is unsolvable in the current state.");
             }
             else {
-                alert("Playboard is solved");
                 markSolvedFields(response.fields);
             }
         }

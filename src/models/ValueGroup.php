@@ -14,6 +14,8 @@ abstract class ValueGroup
 
     protected int $baseSize;
 
+    private array $legalValues;
+
     private FieldIterator $fields;
 
     public function __construct(int|string $index, int $baseSize)
@@ -21,6 +23,7 @@ abstract class ValueGroup
         $this->index = $index;
         $this->fields = new FieldIterator();
         $this->baseSize = $baseSize;
+        $this->legalValues = range(1, pow($this->baseSize, 2));
     }
 
     public function addField(Field $field): void
@@ -68,6 +71,15 @@ abstract class ValueGroup
         }
 
         return $invalidFields;
+    }
+
+    public function getRemainingValues(): ValueIterator
+    {
+       $takenValues = $this->getValues()->toArray();
+
+       $remainingValues = array_diff($this->legalValues, $takenValues);
+
+       return new ValueIterator(...$remainingValues);
     }
 
     private function getValues(): ValueIterator
