@@ -316,6 +316,7 @@ class Playboard
         //$service->prefillByRows();
         //$service->prefillByPlayboardRows();
         $service->prefillByPermutations();
+        //$service->prefillDebugCustomConfig();
     }
 
     public function solve(): bool
@@ -325,8 +326,8 @@ class Playboard
         $emptyFields = $this->getEmptyFields();
 
         //$service->solveByBacktracking($emptyFields);
-        //$service->solveByBacktrackingWithValenceSortedFields($emptyFields);
-        $service->solveByBacktrackingWithValenceSortedFieldsAndLazyResetting($emptyFields, $emptyFields);
+        $service->solveByBacktrackingWithValenceSortedFields($emptyFields);
+        //$service->solveByBacktrackingWithValenceSortedFieldsAndLazyResetting($emptyFields, $emptyFields);
 
         if ($this->isValid() && $this->isComplete()) {
             return true;
