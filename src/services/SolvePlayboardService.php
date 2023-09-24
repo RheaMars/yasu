@@ -54,7 +54,16 @@ class SolvePlayboardService
     }
 
     /**
-     * Improved version of the naive approach to solve a Sudoku by backtracking.
+     * Solve recursively by backtracking.
+     *
+     * Notions that are used:
+     * - The "valence" of a field is the set of legal values that are valid for a given playboard configuration.
+     *
+     * In each recursive step:
+     * - set valence for all empty fields
+     * - sort the empty fields by their valence, from low to large;
+     * - set the first possible value for the first field in the sorted list of fields;
+     * - recurse on the tail of the sorted list of fields.
      */
     public function solveByBacktrackingWithValenceSortedFields(FieldIterator $emptyFields): bool
     {
@@ -62,7 +71,7 @@ class SolvePlayboardService
             $emptyField->setValidValues($this->playboard->getValidValuesForField($emptyField));
         }
 
-        $sortedEmptyFields = $this->getFieldsSortedByNumberOfValidValuesAscending($emptyFields);
+        $sortedEmptyFields = $this->getFieldsSortedByValenceAscending($emptyFields);
 
         foreach ($sortedEmptyFields as $field) {
 
@@ -89,6 +98,8 @@ class SolvePlayboardService
     /**
      * Solve recursively by backtracking.
      *
+     * It is not clear if this version boosts the performance satisfactorily.
+     *
      * Notions that are used:
      * - The "valence" of a field is the set of legal values that are valid for a given playboard configuration.
      * - A change in a field "affects" all fields in the same row, column, and block, that is, all of its neighbors; therefore, setting a value in a field
@@ -108,7 +119,7 @@ class SolvePlayboardService
             $affectedField->setValidValues($this->playboard->getValidValuesForField($affectedField));
         }
 
-        $sortedEmptyFields = $this->getFieldsSortedByNumberOfValidValuesAscending($emptyFields);
+        $sortedEmptyFields = $this->getFieldsSortedByValenceAscending($emptyFields);
 
         foreach ($sortedEmptyFields as $field) {
 
@@ -130,15 +141,15 @@ class SolvePlayboardService
                 $field->setValue(null);
             }
 
-            foreach ($affectedFields as $affectedField) {
-                $affectedField->setValidValues($this->playboard->getValidValuesForField($affectedField));
+            foreach ($emptyFields as $emptyField) {
+                $emptyField->setValidValues($this->playboard->getValidValuesForField($emptyField));
             }
             return false;
         }
         return true;
     }
 
-    private function getFieldsSortedByNumberOfValidValuesAscending(FieldIterator $fields): FieldIterator
+    private function getFieldsSortedByValenceAscending(FieldIterator $fields): FieldIterator
     {
         $fields = $fields->toArray();
         usort($fields, function (Field $a, Field $b) {

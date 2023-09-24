@@ -6,6 +6,7 @@ namespace src\services;
 use src\iterators\FieldIterator;
 use src\iterators\ValueIterator;
 use src\models\Block;
+use src\models\Field;
 use src\models\Playboard;
 
 class PrefillPlayboardService
@@ -210,6 +211,48 @@ class PrefillPlayboardService
                 $parentPermutationUnits = $parentBlock->getAsMatrixColumns();
                 $block->prefillFromMatrix($this->getPermutedUnits($parentPermutationUnits)["colUnits"]);
             }
+        }
+    }
+
+    public function prefillDebugCustomConfig(): void
+    {
+        foreach ($this->playboard->getFields() as $field) {
+            $this->prefillFieldByCoordinates($field, 2, 2, 2);
+            $this->prefillFieldByCoordinates($field, 2, 4, 9);
+            $this->prefillFieldByCoordinates($field, 2, 7, 3);
+            $this->prefillFieldByCoordinates($field, 2, 8, 8);
+            $this->prefillFieldByCoordinates($field, 3, 2, 3);
+            $this->prefillFieldByCoordinates($field, 3, 4, 1);
+            $this->prefillFieldByCoordinates($field, 3, 7, 7);
+            $this->prefillFieldByCoordinates($field, 3, 8, 5);
+            $this->prefillFieldByCoordinates($field, 4, 2, 4);
+            $this->prefillFieldByCoordinates($field, 4, 3, 8);
+            $this->prefillFieldByCoordinates($field, 4, 5, 2);
+            $this->prefillFieldByCoordinates($field, 5, 2, 5);
+            $this->prefillFieldByCoordinates($field, 5, 6, 6);
+            $this->prefillFieldByCoordinates($field, 6, 1, 7);
+            $this->prefillFieldByCoordinates($field, 6, 2, 6);
+            $this->prefillFieldByCoordinates($field, 6, 4, 5);
+            $this->prefillFieldByCoordinates($field, 6, 7, 4);
+            $this->prefillFieldByCoordinates($field, 6, 8, 1);
+            $this->prefillFieldByCoordinates($field, 7, 1, 4);
+            $this->prefillFieldByCoordinates($field, 7, 6, 3);
+            $this->prefillFieldByCoordinates($field, 8, 1, 2);
+            $this->prefillFieldByCoordinates($field, 8, 4, 8);
+            $this->prefillFieldByCoordinates($field, 8, 5, 4);
+            $this->prefillFieldByCoordinates($field, 8, 6, 5);
+            $this->prefillFieldByCoordinates($field, 8, 7, 6);
+            $this->prefillFieldByCoordinates($field, 8, 8, 7);
+            $this->prefillFieldByCoordinates($field, 9, 2, 7);
+            $this->prefillFieldByCoordinates($field, 9, 3, 5);
+            $this->prefillFieldByCoordinates($field, 9, 4, 2);
+        }
+    }
+
+    private function prefillFieldByCoordinates(Field $field, int $rowIndex, int $colIndex, int $value): void
+    {
+        if ($field->getRowIndex() === $rowIndex && $field->getColIndex() === $colIndex) {
+            $field->setValue($value);
         }
     }
 
